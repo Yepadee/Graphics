@@ -19,6 +19,8 @@ struct Image
   int width, height;
   uint32_t* payload;
 
+  Image() {}
+
   Image(int width, int height, uint32_t* payload)
   : width(width)
   , height(height)
@@ -75,74 +77,68 @@ int main(int argc, char* argv[])
 int readNumber(FILE *fptr)
 {
   char buffer[8];
-  int len = 0;
-  char c;
-  do {
-    c = (char) getc(fptr);
-    buffer[len] = c;
-    ++len;
-  } while(!isspace(c));
-  buffer[len] = '\0';
-  int n = atoi(buffer);
-  //free(buffer);
-  return n;
+  fscanf(fptr, "%s\n", buffer);
+  return atoi(buffer);
 }
 
 Image loadPPM(const char* fileName)
 {
-  int e;
   FILE *fptr;
+  int retval;
+
+  Image image;
+  int imageSize;
+
   if ((fptr = fopen(fileName,"r")) == NULL){
       printf("Error! opening file");
       exit(1);
   }
-  char c;
-  // Read Magic No.
-  c = (char) getc(fptr);
-  c = (char) getc(fptr);
+
+  // Read magic no.
+  retval = fscanf(fptr, "%*[^\n]\n");
+
+  //printf("str: %s\n", buf);
 
   // Read Space
-  e = fscanf(fptr, " ");
+  retval = fscanf(fptr, " ");
 
   // Read comment
-  c = (char) getc(fptr);
-  if (c == '#') e = fscanf(fptr, "%*[^\n]\n");
+  char c = (char) getc(fptr);
+  if (c == '#') retval = fscanf(fptr, "%*[^\n]\n");
 
   // Read width
-  int width = readNumber(fptr);
+  image.width = readNumber(fptr);
 
   // Whitespace
-  e = fscanf(fptr, " ");
+  retval = fscanf(fptr, " ");
 
   // Read width
-  int height = readNumber(fptr);
+  image.height = readNumber(fptr);
 
   // Whitespace
-  e = fscanf(fptr, " ");
+  retval = fscanf(fptr, " ");
 
   // Read width
   int maxval = readNumber(fptr);
 
-  if (e) exit(0);
-  if (!maxval) exit(0);
+  if (retval) exit(EXIT_FAILURE);
+  if (!maxval) exit(EXIT_FAILURE);
 
   // Copy payload
-  int imgSize = width * height;
-  uint32_t* payload = (uint32_t*) malloc(imgSize * sizeof(uint32_t));
+  imageSize = image.width * image.height;
+  image.payload = (uint32_t*) malloc(imageSize * sizeof(uint32_t));
 
-  for (int i = 0; i < imgSize; ++i)
+  for (int i = 0; i < imageSize; ++i)
   {
     int r = (int) getc(fptr);
     int g = (int) getc(fptr);
     int b = (int) getc(fptr);
 
     uint32_t colour = packRGB(r,g,b); 
-    payload[i] = colour;
+    image.payload[i] = colour;
   }
 
   fclose(fptr);
-
-  Image image(width, height, payload);
 
   return image;
 }
@@ -435,7 +431,6 @@ void draw()
 {
   window.clearPixels();
   colourInterp();
-  //drawImage(image);
 
   CanvasPoint p1(160, 10);
   CanvasPoint p2(300, 230);
@@ -451,7 +446,7 @@ void draw()
   fillTriangleTexture(triangle, image);
   drawTriangle(triangle, 0);
   
-
+  
   for (CanvasTriangle t : triangles)
   {
     fillTriangle(t);
