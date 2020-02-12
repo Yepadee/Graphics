@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
 {
   SDL_Event event;
 
-  loadMaterial("cornell-box.mtl");
+  ObjectCollection objects = loadOBJ("cornell-box.obj");
 
   while(true)
   {

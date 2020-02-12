@@ -1,55 +1,107 @@
 #include <fstream>
 #include <iostream>
-
-
 #include <unordered_map>
 
-class Material
-{
+std::string* split(std::string line, char delim);
 
-};
+class ModelTriangle;
 
 class Object
 {
+private:
+    std::string name;
+    std::string colour;
+    std::vector<ModelTriangle> triangles;
+
+public:
+    Object(std::string name, std::string colour, std::vector<ModelTriangle> triangles)
+    : name(name)
+    , colour(colour)
+    , triangles(triangles)
+    {}
+};
+
+
+class ObjectCollection
+{
+private:
+    std::unordered_map<std::string, Colour> colours;
+    std::vector<Object> objects;
+
+public:
+    ObjectCollection(std::unordered_map<std::string, Colour> colours, std::vector<Object> objects)
+    : colours(colours)
+    , objects(objects)
+    {}
+    
+    std::unordered_map<std::string, Colour> getColours()
+    {
+        return colours;
+    }
+
+    std::vector<Object> getObjects()
+    {
+        return objects;
+    }
 
 };
 
+
 Colour readColour(std::ifstream& ifs)
 {
-    uint32_t r = 0;
-    uint32_t g = 0;
-    uint32_t b = 0;
-
+    Colour colour;
     std::string buffer;
-    std::string name;
+    float rf, gf, bf;
 
     std::getline(ifs, buffer);
-    name = buffer.substr(7, buffer.size());
-    std::cout << "colour: " << name << std::endl;
+    colour.name = buffer.substr(7, buffer.size());
 
     std::getline(ifs, buffer);
-    //std::string* tokens;
+    std::string* tokens = split(buffer, ' ');
 
+    rf = std::stof(tokens[1]);
+    gf = std::stof(tokens[2]);
+    bf = std::stof(tokens[3]);
 
-    std::cout << "rgb: " << buffer << std::endl;
+    colour.red   = (int) (rf * 255.0f);
+    colour.green = (int) (gf * 255.0f);
+    colour.blue  = (int) (bf * 255.0f);
 
     std::getline(ifs, buffer);
 
-
-
-    return Colour(name, r, g, b);
+    return colour;
 }
 
-Material loadMaterial(const char* filepath)
+std::unordered_map<std::string, Colour> loadColours(const char* filepath)
 {   
-    std::unordered_map<std::string, Colour> palette;
-    std::ifstream ifs (filepath, std::ifstream::in);
+    std::unordered_map<std::string, Colour> colours;
+    std::ifstream ifs(filepath, std::ifstream::in);
 
     while(ifs.good())
     {
-        Colour colour = readColour(ifs); 
+        Colour colour = readColour(ifs);
+        colours[colour.name] = colour;
+        
     }
 
+    return colours;
+}
 
-    return Material();
+Object readObject()
+{
+
+}
+
+ObjectCollection loadOBJ(const char* filepath)
+{
+    std::unordered_map<std::string, Colour> colours;
+    std::vector<Object> objects;
+    std::ifstream ifs(filepath, std::ifstream::in);
+    
+    std::string matFilepath;
+    matFilepath << ifs;
+
+    colours = loadColours(matFilepath.c_str()); 
+    
+    return ObjectCollection(colours, objects);
 }
