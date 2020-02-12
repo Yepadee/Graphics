@@ -34,6 +34,8 @@ struct Image
   }
 };
 
+struct Object
+
 
 void draw();
 void update();
@@ -154,7 +156,6 @@ void drawImage(Image& img)
     }
   }
 }
-
 
 void drawLine(const CanvasPoint& from, const CanvasPoint& to, uint32_t colour)
 {
@@ -446,7 +447,7 @@ void draw()
   fillTriangleTexture(triangle, image);
   drawTriangle(triangle, 0);
   
-  
+
   for (CanvasTriangle t : triangles)
   {
     fillTriangle(t);
