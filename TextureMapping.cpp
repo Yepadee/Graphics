@@ -38,7 +38,12 @@ int main(int argc, char* argv[])
 {
   SDL_Event event;
 
-  ObjectCollection objects = loadOBJ("cornell-box.obj");
+  std::vector<Object> objects = loadOBJ("cornell-box.obj");
+  
+  for (Object obj : objects)
+  {
+    std::cout << obj << std::endl;
+  }
 
   while(true)
   {

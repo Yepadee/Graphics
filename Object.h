@@ -6,46 +6,30 @@ std::string* split(std::string line, char delim);
 
 class ModelTriangle;
 
-class Object
+struct Object
 {
-private:
     std::string name;
-    std::string colour;
     std::vector<ModelTriangle> triangles;
 
-public:
-    Object(std::string name, std::string colour, std::vector<ModelTriangle> triangles)
+    Object(std::string name, std::vector<ModelTriangle> triangles)
     : name(name)
-    , colour(colour)
     , triangles(triangles)
     {}
+
 };
 
-
-class ObjectCollection
+std::ostream& operator<<(std::ostream& os, const Object& object)
 {
-private:
-    std::unordered_map<std::string, Colour> colours;
-    std::vector<Object> objects;
-
-public:
-    ObjectCollection(std::unordered_map<std::string, Colour> colours, std::vector<Object> objects)
-    : colours(colours)
-    , objects(objects)
-    {}
-    
-    std::unordered_map<std::string, Colour> getColours()
+    os << object.name << ":" << std::endl;
+    os << "[";
+    for (ModelTriangle triangle : object.triangles)
     {
-        return colours;
+        os << triangle;
     }
-
-    std::vector<Object> getObjects()
-    {
-        return objects;
-    }
-
-};
-
+    os << "]";
+    os << std::endl;
+    return os;
+}
 
 Colour readColour(std::ifstream& ifs)
 {
@@ -84,24 +68,95 @@ std::unordered_map<std::string, Colour> loadColours(const char* filepath)
         
     }
 
+    ifs.close();
+
     return colours;
 }
 
-Object readObject()
+glm::vec3 readVertex(std::ifstream& ifs)
 {
+    float p0, p1, p2;
+    std::string buffer;
 
+    ifs >> buffer;
+    p0 = std::stof(buffer);
+
+    ifs >> buffer;
+    p1 = std::stof(buffer);
+   
+    ifs >> buffer;
+    p2 = std::stof(buffer);
+
+    return glm::vec3(p0, p1, p2);
 }
 
-ObjectCollection loadOBJ(const char* filepath)
+Object readObject(std::ifstream& ifs, std::unordered_map<std::string, Colour>& colourMap, int& totalVertices)
 {
-    std::unordered_map<std::string, Colour> colours;
+    std::string name;
+    std::string colour;
+    std::vector<glm::vec3> vertices;
+    std::vector<ModelTriangle> triangles;
+
+    std::string buffer;
+    ifs >> name;
+
+    ifs >> buffer;
+    ifs >> colour;
+
+    //Read Vertices
+    ifs >> buffer;
+    while (buffer == "v")
+    {   
+        vertices.push_back(readVertex(ifs));
+        ifs >> buffer;
+    }
+
+    glm::vec3 v0, v1, v2;
+    while (buffer == "f")
+    {
+        ifs >> buffer;
+        buffer.erase(buffer.size() - 1); // Remove trailing '/'
+        v0 = vertices[std::stoi(buffer) - totalVertices - 1];
+
+        ifs >> buffer;
+        buffer.erase(buffer.size() - 1); // Remove trailing '/'
+        v1 = vertices[std::stoi(buffer) - totalVertices - 1];
+
+        ifs >> buffer;
+        buffer.erase(buffer.size() - 1); // Remove trailing '/'
+        v2 = vertices[std::stoi(buffer) - totalVertices - 1];
+
+        ModelTriangle triangle(v0, v1, v2, colourMap[colour]);
+
+        triangles.push_back(triangle);
+
+        ifs >> buffer;
+    }
+
+    totalVertices += vertices.size();
+
+    return Object(name, triangles);
+}
+
+std::vector<Object> loadOBJ(const char* filepath)
+{
+    std::unordered_map<std::string, Colour> colourMap;
     std::vector<Object> objects;
     std::ifstream ifs(filepath, std::ifstream::in);
-    
-    std::string matFilepath;
-    matFilepath << ifs;
 
-    colours = loadColours(matFilepath.c_str()); 
-    
-    return ObjectCollection(colours, objects);
+    std::string buffer;
+    ifs >> buffer;
+    ifs >> buffer;
+
+    colourMap = loadColours(buffer.c_str()); 
+    int totalVertices = 0;
+    ifs >> buffer;
+    while(ifs.good())
+    {
+        objects.push_back(readObject(ifs, colourMap, totalVertices));
+    }
+
+    ifs.close();
+
+    return objects;
 }
