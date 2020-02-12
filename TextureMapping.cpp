@@ -5,7 +5,9 @@
 #include <glm/glm.hpp>
 #include <fstream>
 #include <vector>
+
 #include "Image.h"
+#include "Object.h"
 
 using namespace std;
 using namespace glm;
@@ -36,8 +38,7 @@ int main(int argc, char* argv[])
 {
   SDL_Event event;
 
-  loadPPM("texture.ppm");
-
+  loadMaterial("cornell-box.mtl");
 
   while(true)
   {
@@ -50,7 +51,7 @@ int main(int argc, char* argv[])
   }
 }
 
-void drawImage(Image& img)
+void drawImage(Image& img, DrawingWindow& window)
 {
   for (int y = 0; y < img.getHeight(); ++y)
   {
