@@ -5,6 +5,7 @@
 #include <glm/glm.hpp>
 #include <fstream>
 #include <vector>
+#include "Image.h"
 
 using namespace std;
 using namespace glm;
@@ -14,41 +15,14 @@ using namespace glm;
 
 #define BLACK 0
 
-struct Image
-{
-  int width, height;
-  uint32_t* payload;
-
-  Image() {}
-
-  Image(int width, int height, uint32_t* payload)
-  : width(width)
-  , height(height)
-  , payload(payload)
-  {}
-
-  uint32_t GetPixel(int x, int y)
-  {
-    int i = y * width + x;
-    return payload[i];
-  }
-};
-
-struct Object
-
 
 void draw();
 void update();
 void handleEvent(SDL_Event event);
 
-Image loadPPM(const char* filename);
-
-inline uint32_t packRGB(int r, int g, int b);
-
 void drawLine(const CanvasPoint& from, const CanvasPoint& to, uint32_t colour);
 void drawTriangle(CanvasTriangle& triangle, uint32_t colour);
 void fillTriangle(CanvasTriangle& triangle);
-
 
 std::vector<float> interpolate(float from, float to, float numValues);
 
@@ -76,75 +50,6 @@ int main(int argc, char* argv[])
   }
 }
 
-int readNumber(FILE *fptr)
-{
-  char buffer[8];
-  fscanf(fptr, "%s\n", buffer);
-  return atoi(buffer);
-}
-
-Image loadPPM(const char* fileName)
-{
-  FILE *fptr;
-  int retval;
-
-  Image image;
-  int imageSize;
-
-  if ((fptr = fopen(fileName,"r")) == NULL){
-      printf("Error! opening file");
-      exit(1);
-  }
-
-  // Read magic no.
-  retval = fscanf(fptr, "%*[^\n]\n");
-
-  //printf("str: %s\n", buf);
-
-  // Read Space
-  retval = fscanf(fptr, " ");
-
-  // Read comment
-  char c = (char) getc(fptr);
-  if (c == '#') retval = fscanf(fptr, "%*[^\n]\n");
-
-  // Read width
-  image.width = readNumber(fptr);
-
-  // Whitespace
-  retval = fscanf(fptr, " ");
-
-  // Read width
-  image.height = readNumber(fptr);
-
-  // Whitespace
-  retval = fscanf(fptr, " ");
-
-  // Read width
-  int maxval = readNumber(fptr);
-
-  if (retval) exit(EXIT_FAILURE);
-  if (!maxval) exit(EXIT_FAILURE);
-
-  // Copy payload
-  imageSize = image.width * image.height;
-  image.payload = (uint32_t*) malloc(imageSize * sizeof(uint32_t));
-
-  for (int i = 0; i < imageSize; ++i)
-  {
-    int r = (int) getc(fptr);
-    int g = (int) getc(fptr);
-    int b = (int) getc(fptr);
-
-    uint32_t colour = packRGB(r,g,b); 
-    image.payload[i] = colour;
-  }
-
-  fclose(fptr);
-
-  return image;
-}
-
 void drawImage(Image& img)
 {
   for (int y = 0; y < img.height; ++y)
@@ -156,6 +61,7 @@ void drawImage(Image& img)
     }
   }
 }
+
 
 void drawLine(const CanvasPoint& from, const CanvasPoint& to, uint32_t colour)
 {
@@ -346,21 +252,6 @@ std::vector<vec3> interpolate(vec3 from, vec3 to, float numValues)
   }
 
   return values;
-}
-
-inline uint32_t packRGB(int r, int g, int b)
-{
-  return (255<<24) + (r<<16) + (g<<8) + b;
-}
-
-inline uint32_t packRGB(vec3 rgb)
-{
-  return (255<<24) + (int(rgb.x)<<16) + (int(rgb.y)<<8) + int(rgb.z);
-}
-
-inline uint32_t packGreyscale(int n)
-{
-  return (255<<24) + (int(n)<<16) + (int(n)<<8) + int(n);
 }
 
 void drawRandomTriangle()
