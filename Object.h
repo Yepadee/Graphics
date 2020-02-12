@@ -1,8 +1,9 @@
+#pragma once
+
 #include <fstream>
 #include <iostream>
 #include <unordered_map>
-
-std::string* split(std::string line, char delim);
+#include <Utils.h>
 
 class ModelTriangle;
 
@@ -90,7 +91,7 @@ glm::vec3 readVertex(std::ifstream& ifs)
     return glm::vec3(p0, p1, p2);
 }
 
-Object readObject(std::ifstream& ifs, std::unordered_map<std::string, Colour>& colourMap, int& totalVertices)
+Object readObject(std::ifstream& ifs, std::unordered_map<std::string, Colour>& colourMap, int& totalVertices, float scaleFactor)
 {
     std::string name;
     std::string colour;
@@ -107,7 +108,7 @@ Object readObject(std::ifstream& ifs, std::unordered_map<std::string, Colour>& c
     ifs >> buffer;
     while (buffer == "v")
     {   
-        vertices.push_back(readVertex(ifs));
+        vertices.push_back(readVertex(ifs) * scaleFactor);
         ifs >> buffer;
     }
 
@@ -138,7 +139,7 @@ Object readObject(std::ifstream& ifs, std::unordered_map<std::string, Colour>& c
     return Object(name, triangles);
 }
 
-std::vector<Object> loadOBJ(const char* filepath)
+std::vector<Object> loadOBJ(const char* filepath, float scaleFactor)
 {
     std::unordered_map<std::string, Colour> colourMap;
     std::vector<Object> objects;
@@ -153,7 +154,7 @@ std::vector<Object> loadOBJ(const char* filepath)
     ifs >> buffer;
     while(ifs.good())
     {
-        objects.push_back(readObject(ifs, colourMap, totalVertices));
+        objects.push_back(readObject(ifs, colourMap, totalVertices, scaleFactor));
     }
 
     ifs.close();

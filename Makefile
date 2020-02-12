@@ -1,4 +1,4 @@
-PROJECT_NAME = TextureMapping
+PROJECT_NAME = graphics
 
 # Define the names of key files
 SOURCE_FILE = $(PROJECT_NAME).cpp
