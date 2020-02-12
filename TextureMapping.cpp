@@ -52,9 +52,9 @@ int main(int argc, char* argv[])
 
 void drawImage(Image& img)
 {
-  for (int y = 0; y < img.height; ++y)
+  for (int y = 0; y < img.getHeight(); ++y)
   {
-    for (int x = 0; x < img.width; ++x)
+    for (int x = 0; x < img.getWidth(); ++x)
     {
       uint32_t colour = img.GetPixel(x, y);
       window.setPixelColour(x, y, colour);
