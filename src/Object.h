@@ -65,8 +65,8 @@ std::unordered_map<std::string, Colour> loadColours(const char* filepath)
     while(ifs.good())
     {
         Colour colour = readColour(ifs);
-        colours[colour.name] = colour;
         
+        colours[colour.name] = colour;
     }
 
     ifs.close();
@@ -145,11 +145,15 @@ std::vector<Object> loadOBJ(const char* filepath, float scaleFactor)
     std::vector<Object> objects;
     std::ifstream ifs(filepath, std::ifstream::in);
 
+    std::string matFilepath;
     std::string buffer;
     ifs >> buffer;
     ifs >> buffer;
 
-    colourMap = loadColours(buffer.c_str()); 
+    matFilepath = "models/";
+    matFilepath += buffer;
+
+    colourMap = loadColours(matFilepath.c_str()); 
     int totalVertices = 0;
     ifs >> buffer;
     while(ifs.good())

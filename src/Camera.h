@@ -2,10 +2,12 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <ModelTriangle.h>
+#include <CanvasTriangle.h>
 
 using namespace glm;
 
-mat4x4 constructCameraSpace(vec3 pos, vec3 angle)
+mat4x4 constructCameraSpace(const vec3& pos, const vec3& angle)
 {
     float X = angle.x;
     float Y = angle.y;
@@ -17,13 +19,21 @@ mat4x4 constructCameraSpace(vec3 pos, vec3 angle)
     -sin(Y)       ,  sin(X)*cos(Y)                       ,  cos(X)*cos(Y)                       , pos.z,
      0.0f         ,  0.0f                                ,  0.0f                                , 1.0f
     };
+    
+    // float values[16] = {
+    //  1, 0, 0, pos.x,
+    //  0, 1, 0, pos.y,
+    //  0, 0, 1, pos.z,
+    //  0, 0, 0, 1
+    // };
 
-    return  transpose(make_mat4(values));
+    return transpose(make_mat4(values));
 }
 
-vec2 project2D(vec3 pointWorldSpace, mat4x4 worldToCamera, float focalLength,
-               float canvasWidth, float canvasHeight,
-               float imageWidth , float imageHeight)
+//Naive projection. 
+CanvasPoint project2D(const vec3& pointWorldSpace, const mat4x4& worldToCamera, float focalLength,
+                      float canvasWidth, float canvasHeight,
+                      float imageWidth , float imageHeight)
 {
     // Translate point in world space to point in camera space:
     //mat4x4 cameraToWorld = inverse(worldToCamera);
@@ -31,8 +41,8 @@ vec2 project2D(vec3 pointWorldSpace, mat4x4 worldToCamera, float focalLength,
 
     // Perspective Projection:
     vec2 pointScreenSpace;
-    pointScreenSpace.x = pointCamSpace.x / -pointCamSpace.z;
-    pointScreenSpace.y = pointCamSpace.y / -pointCamSpace.z;
+    pointScreenSpace.x = focalLength * pointCamSpace.x / -pointCamSpace.z;
+    pointScreenSpace.y = focalLength * pointCamSpace.y / -pointCamSpace.z;
 
     // Normalize coordinates (range [0.0, 1.0])
     vec2 pNDC;
@@ -41,9 +51,25 @@ vec2 project2D(vec3 pointWorldSpace, mat4x4 worldToCamera, float focalLength,
 
 
     // Convert to pixel coords.
-    vec2 pRaster;
+    CanvasPoint pRaster;
     pRaster.x = std::floor(pNDC.x * imageWidth);
     pRaster.y = std::floor((1.0f - pNDC.y) * imageHeight);
+    pRaster.depth = pointCamSpace.z;
 
     return pRaster;
+}
+
+CanvasTriangle projectTriangle(const ModelTriangle& modelTriangle, const mat4x4& worldToCamera, float focalLength,
+                               float canvasWidth, float canvasHeight,
+                               float imageWidth, float imageHeight)
+{
+    CanvasTriangle canvasTriangle;
+    for (int i = 0; i < 3; ++i)
+    {
+        CanvasPoint projected = project2D(modelTriangle.vertices[i], worldToCamera, focalLength, canvasWidth, canvasHeight, imageWidth, imageHeight);
+        canvasTriangle.vertices[i] = projected;
+        canvasTriangle.colour = modelTriangle.colour;
+    }
+
+    return canvasTriangle;
 }

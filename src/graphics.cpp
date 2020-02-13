@@ -13,8 +13,8 @@
 using namespace std;
 using namespace glm;
 
-#define WIDTH 500
-#define HEIGHT 500
+#define WIDTH 720
+#define HEIGHT 720
 
 #define BLACK 0
 
@@ -32,19 +32,24 @@ std::vector<float> interpolate(float from, float to, float numValues);
 DrawingWindow window = DrawingWindow(WIDTH, HEIGHT, false);
 
 std::vector<CanvasTriangle> triangles;
+std::vector<CanvasTriangle> drawList;
 
-Image image = loadPPM("texture.ppm");
+Image image = loadPPM("textures/texture.ppm");
+
+glm::vec3 cameraPos(0.2f, -2.5f, -2.8f);
+glm::vec3 cameraAngle(0.0f, 0.0f, 0.0f);
+
+float canvasWidth = WIDTH;
+float canvasHeight = HEIGHT;
+float imageWidth = WIDTH;
+float imageHeight = HEIGHT;
+float focalLength = WIDTH / 2;
+
+std::vector<Object> objects = loadOBJ("models/cornell-box.obj", 1.0f);
 
 int main(int argc, char* argv[])
 {
   SDL_Event event;
-
-  std::vector<Object> objects = loadOBJ("cornell-box.obj", 0.5f);
-  // for (Object obj : objects)
-  // {
-  //   std::cout << obj << std::endl;
-  // }
-
 
   while(true)
   {
@@ -80,7 +85,10 @@ void drawLine(const CanvasPoint& from, const CanvasPoint& to, uint32_t colour)
   for (float i=0.0; i<numberOfSteps; i++) {
     float x = from.x + (xStepSize*i);
     float y = from.y + (yStepSize*i);
-    window.setPixelColour(round(x), round(y), colour);
+    if (x > 0 && x < WIDTH - 1 && y < HEIGHT - 1 && y > 0)
+    {
+      window.setPixelColour(round(x), round(y), colour);
+    }
   }
 }
 
@@ -276,80 +284,28 @@ void drawRandomTriangle()
   triangles.push_back(t);
 }
 
-void colourInterp()
-{
-  vec3 TL( 255, 0, 0 );
-  vec3 TR( 0, 0, 255 );
-
-  vec3 BL( 255, 255, 0 );
-  vec3 BR( 0, 255, 0 );
-
-  std::vector<vec3> LHS = interpolate(TL, BL, window.height);
-  std::vector<vec3> RHS = interpolate(TR, BR, window.height);
-
-  for(int y=0; y<window.height ;y++) {
-    vec3 from = LHS[y];
-    vec3 to = RHS[y];
-    std::vector<vec3> values = interpolate(from, to, window.width);
-
-    for(int x=0; x<window.width ;x++) {
-      vec3 value = values[x];
-      uint32_t colour = packRGB(value);
-      window.setPixelColour(x, y, colour);
-    }
-  }
-}
-
-void greyScale()
-{
-  std::vector<float> values = interpolate(255, 0, window.width);
-
-  for(int y=0; y<window.height ;y++) {
-    for(int x=0; x<window.width ;x++) {
-      int value = (int) values[x];
-      uint32_t colour = packGreyscale(value);
-      window.setPixelColour(x, y, colour);
-    }
-  }
-}
-
-void redNoise()
-{
-  for(int y=0; y<window.height ;y++) {
-    for(int x=0; x<window.width ;x++) {
-      float red = rand() % 255;
-      float green = 0.0;
-      float blue = 0.0;
-      uint32_t colour = (255<<24) + (int(red)<<16) + (int(green)<<8) + int(blue);
-      window.setPixelColour(x, y, colour);
-    }
-  }
-}
-
 void draw()
 {
   window.clearPixels();
-  colourInterp();
 
-  CanvasPoint p1(160, 10);
-  CanvasPoint p2(300, 230);
-  CanvasPoint p3(10, 150);
+  glm::mat4x4 cameraToWorld = constructCameraSpace(cameraPos, cameraAngle);
 
-  p1.texturePoint = {195, 5};
-  p2.texturePoint = {395, 380};
-  p3.texturePoint = {65, 330};
-
-  CanvasTriangle triangle(p1,p2,p3);
-
-  
-  fillTriangleTexture(triangle, image);
-  drawTriangle(triangle, 0);
-  
-
-  for (CanvasTriangle t : triangles)
+  for (Object obj : objects)
   {
-    fillTriangle(t);
-    drawTriangle(t, 0);
+    for (ModelTriangle m : obj.triangles)
+    {
+      //drawList.push_back(projectTriangle(m, cameraToWorld, focalLength, canvasWidth, canvasHeight, imageWidth, imageHeight));
+      CanvasTriangle t = projectTriangle(m, cameraToWorld, focalLength, canvasWidth, canvasHeight, imageWidth, imageHeight);
+      //uint32_t rgb = packRGB(t.colour.red, t.colour.green, t.colour.blue);
+      fillTriangle(t);
+    }
+  }
+
+  for (CanvasTriangle t : drawList)
+  {
+    //fillTriangle(t);
+    uint32 rgb = packRGB(t.colour.red, t.colour.green, t.colour.blue);
+    drawTriangle(t, rgb);
   }
 }
 
@@ -360,13 +316,35 @@ void update()
 
 void handleEvent(SDL_Event event)
 {
+  float vel = 0.1f;
+
   if(event.type == SDL_KEYDOWN) {
-    if(event.key.keysym.sym == SDLK_LEFT) cout << "LEFT" << endl;
-    else if(event.key.keysym.sym == SDLK_RIGHT) cout << "RIGHT" << endl;
-    else if(event.key.keysym.sym == SDLK_UP) cout << "UP" << endl;
-    else if(event.key.keysym.sym == SDLK_DOWN) cout << "DOWN" << endl;
-    else if(event.key.keysym.sym == SDLK_u) drawRandomTriangle();
-    else if(event.key.keysym.sym == SDLK_i) triangles.pop_back();
+    // Position
+    if(event.key.keysym.sym == SDLK_LEFT) cameraPos.x += vel;
+    else if(event.key.keysym.sym == SDLK_RIGHT) cameraPos.x -= vel;
+
+    else if(event.key.keysym.sym == SDLK_UP) cameraPos.z += vel;
+    else if(event.key.keysym.sym == SDLK_DOWN) cameraPos.z -= vel;
+
+    else if(event.key.keysym.sym == SDLK_LCTRL) cameraPos.y += vel;
+    else if(event.key.keysym.sym == SDLK_LSHIFT) cameraPos.y -= vel;
+    
+
+    // Angle
+    else if(event.key.keysym.sym == SDLK_w) cameraAngle.x += vel;
+    else if(event.key.keysym.sym == SDLK_s) cameraAngle.x -= vel;
+
+    else if(event.key.keysym.sym == SDLK_d) cameraAngle.y += vel;
+    else if(event.key.keysym.sym == SDLK_a) cameraAngle.y -= vel;
+
+    else if(event.key.keysym.sym == SDLK_q) cameraAngle.z += vel;
+    else if(event.key.keysym.sym == SDLK_e) cameraAngle.z -= vel;
+
+    else if(event.key.keysym.sym == SDLK_u) focalLength += 10;
+    else if(event.key.keysym.sym == SDLK_i) focalLength -= 10;
+
+    std::cout << cameraPos.x << ", " << cameraPos.y << ", " << cameraPos.z <<std::endl;
+    std::cout << cameraAngle.x << ", " << cameraAngle.y << ", " << cameraAngle.z << std::endl << std::endl;
   }
   else if(event.type == SDL_MOUSEBUTTONDOWN) cout << "MOUSE CLICKED" << endl;
 }
