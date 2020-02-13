@@ -20,13 +20,6 @@ mat4x4 constructCameraSpace(const vec3& pos, const vec3& angle)
      0.0f         ,  0.0f                                ,  0.0f                                , 1.0f
     };
     
-    // float values[16] = {
-    //  1, 0, 0, pos.x,
-    //  0, 1, 0, pos.y,
-    //  0, 0, 1, pos.z,
-    //  0, 0, 0, 1
-    // };
-
     return transpose(make_mat4(values));
 }
 
