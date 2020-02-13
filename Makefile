@@ -1,7 +1,7 @@
 PROJECT_NAME = graphics
 
 # Define the names of key files
-SOURCE_FILE = $(PROJECT_NAME).cpp
+SOURCE_FILE = src/$(PROJECT_NAME).cpp
 OBJECT_FILE = $(PROJECT_NAME).o
 EXECUTABLE = $(PROJECT_NAME)
 WINDOW_SOURCE = libs/sdw/DrawingWindow.cpp

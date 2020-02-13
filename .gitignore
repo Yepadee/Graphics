@@ -1,2 +1,5 @@
 libs/
 .vscode/
+
+graphics.o
+graphics
