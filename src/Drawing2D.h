@@ -8,7 +8,12 @@
 #include "Image.h"
 #include "Interpolation.h"
 
-
+/**
+ * Draw an image to a window.
+ *
+ * @param img A loaded image.
+ * @param window The window the image is to be drawn onto.
+ */
 void drawImage(Image& img, DrawingWindow& window)
 {
   for (int y = 0; y < img.getHeight(); ++y)
@@ -21,7 +26,14 @@ void drawImage(Image& img, DrawingWindow& window)
   }
 }
 
-
+/**
+ * Draws a line on a window between two canvas points.
+ *
+ * @param from The first point of the line.
+ * @param to The second point of the line.
+ * @param colour A bitpacked RGB colour of the line.
+ * @param window The window the image is to be drawn onto.
+ */
 void drawLine(const CanvasPoint& from, const CanvasPoint& to, uint32_t colour, DrawingWindow& window)
 {
   float xDiff = to.x - from.x;
@@ -39,6 +51,13 @@ void drawLine(const CanvasPoint& from, const CanvasPoint& to, uint32_t colour, D
   }
 }
 
+/**
+ * Draws a triangle onto the window.
+ *
+ * @param triangle CanvasTriangle to be drawn.
+ * @param colour A bitpacked RGB colour of the line.
+ * @param window The window the image is to be drawn onto.
+ */
 void drawTriangle(CanvasTriangle& triangle, uint32_t colour, DrawingWindow& window)
 {
   int j = 2;
@@ -63,29 +82,47 @@ void sortVertices(CanvasTriangle& triangle)
     }
 }
 
+/**
+ * Fills a triangle onto the window.
+ *
+ * @param triangle CanvasTriangle to be filled.
+ * @param window The window the image is to be drawn onto.
+ */
 void fillTriangle(CanvasTriangle& triangle, DrawingWindow& window)
 {
+  // Sort the vertices of the triangle from smallest to largest.
   sortVertices(triangle);
   CanvasPoint minPoint = triangle.vertices[0];
   CanvasPoint midPoint = triangle.vertices[1];
   CanvasPoint maxPoint = triangle.vertices[2];
 
+  // Define the y points to interpolate between so we can draw between them. 
   float yStart = minPoint.y;
   float yMid = midPoint.y;
   float yEnd = maxPoint.y;
 
+  // Find the total height of the triangle.
+  // Then interpolate down the Long face of the triangle.
+  // We do this to find the x values of the long side of
+  // the triangle for each of the y values between the
+  // top and bottom of the triangle.
   int yDiff = yEnd - yStart;
   std::vector<float> xPointsRHS = interpolate(minPoint.x, maxPoint.x, yDiff);
 
+  // Find the distance between the top of the triangle (min point) and the middle point of the triangle (mid point).
+  // Interpolate x's down the top short face of the triangle.
   int yDiffTop = yMid - yStart;
   std::vector<float> xPointsLHS1 = interpolate(minPoint.x, midPoint.x, yDiffTop);
 
+  // Find the distance between the middle point of the triangle (mid point) and the bottom of the triangle (max point).
+  // Interpolate x's down the bottom short face of the triangle.
   int yDiffBtm = yEnd - yMid;
   std::vector<float> xPointsLHS2 = interpolate(midPoint.x, maxPoint.x, yDiffBtm);
 
   uint32_t colour = packRGB(triangle.colour.red, triangle.colour.green, triangle.colour.blue);
 
-  //Fill top triangle.
+  // Fill top triangle.
+  // Draw between x's in the top short face on the LHS and x's on the RHS.
   for (float y = yStart; y < yMid; ++y)
   {
     float x1 = xPointsLHS1[(int) (y - yStart)];
@@ -94,6 +131,7 @@ void fillTriangle(CanvasTriangle& triangle, DrawingWindow& window)
   }
 
   //Fill bottom triangle.
+  // Draw between x's in the bottom short face on the LHS and x's on the RHS.
   for (float y = yMid; y < yEnd; ++y)
   {
     float x1 = xPointsLHS2[(int) (y - yMid)];
@@ -102,6 +140,13 @@ void fillTriangle(CanvasTriangle& triangle, DrawingWindow& window)
   }
 }
 
+/**
+ * Fills a triangle onto the window.
+ *
+ * @param triangle CanvasTriangle to be filled.
+ * @pararm image The image used to texture the triangle.
+ * @param window The window the image is to be drawn onto.
+ */
 void fillTriangleTexture(CanvasTriangle& triangle, Image& image, DrawingWindow& window)
 {
   sortVertices(triangle);

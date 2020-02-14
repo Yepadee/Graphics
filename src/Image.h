@@ -42,6 +42,12 @@ int readNumber(FILE *fptr)
   return atoi(buffer);
 }
 
+/**
+ * Loads a PPM file.
+ *
+ * @param filename The location of the ppm file.
+ * @return An image container, containing the payload and size of the image.
+ */
 Image loadPPM(const char* fileName)
 {
   FILE *fptr;

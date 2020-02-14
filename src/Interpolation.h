@@ -5,7 +5,14 @@
 
 using namespace glm;
 
-
+/**
+ * Interpolates between two floating point numbers
+ *
+ * @param from The starting point.
+ * @param to The ending point.
+ * @param numValues The number of values to obtain beteen the starting and ending points.
+ * @return A vector containing the interpolated values
+ */
 std::vector<float> interpolate(float from, float to, float numValues)
 {
   std::vector<float> values;
@@ -22,6 +29,14 @@ std::vector<float> interpolate(float from, float to, float numValues)
   return values;
 }
 
+/**
+ * Interpolates between two 3D vectors.
+ *
+ * @param from The starting point.
+ * @param to The ending point.
+ * @param numValues The number of values to obtain beteen the starting and ending points.
+ * @return A vector containing the interpolated values
+ */
 std::vector<vec3> interpolate(vec3 from, vec3 to, float numValues)
 {
   std::vector<vec3> values;

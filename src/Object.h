@@ -139,6 +139,13 @@ Object readObject(std::ifstream& ifs, std::unordered_map<std::string, Colour>& c
     return Object(name, triangles);
 }
 
+/**
+ * Load a .obj file into a list of 3D objects.
+ *
+ * @param filepath The location of the .obj file.
+ * @param scaleFactor A value all the vertices describing the objects will be scaled by.
+ * @return a vector containing all the objects within the loaded file.
+ */
 std::vector<Object> loadOBJ(const char* filepath, float scaleFactor)
 {
     std::unordered_map<std::string, Colour> colourMap;

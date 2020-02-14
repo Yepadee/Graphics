@@ -7,6 +7,13 @@
 
 using namespace glm;
 
+/**
+ * Construct homogenious world-to-camera matrix.
+ *
+ * @param pos A 3D position vector of camera.
+ * @param angle A 3D angle vector of camera.
+ * @return 4x4 homogenious matrix that maps vertices in world space to vertices on camera space.
+ */
 mat4x4 constructCameraSpace(const vec3& pos, const vec3& angle)
 {
     float X = angle.x;
@@ -23,7 +30,18 @@ mat4x4 constructCameraSpace(const vec3& pos, const vec3& angle)
     return transpose(make_mat4(values));
 }
 
-//Naive projection. 
+/**
+ * Project a 3D vector in world space to a 2D CanvasPoint in screen space.
+ *
+ * @param pointWorldSpace A 3D point in world space.
+ * @param worldToCamera A 4x4 matrix that maps points from the world space to the camera space.
+ * @param focalLength The focal length of the camera.
+ * @param canvasWidth The width of the canvas points are projected to in scale relative to values in world space.
+ * @param canvasHeight The height of the canvas points are projected to in scale relative to values in world space.
+ * @param imageWidth The width of the window points are to be drawn on to.
+ * @param imageHeight The height of the window points are to be drawn on to.
+ * @return 2D projection of the provided 3D point.
+ */
 CanvasPoint project2D(const vec3& pointWorldSpace, const mat4x4& worldToCamera, float focalLength,
                       float canvasWidth, float canvasHeight,
                       float imageWidth , float imageHeight)
@@ -51,7 +69,18 @@ CanvasPoint project2D(const vec3& pointWorldSpace, const mat4x4& worldToCamera, 
 
     return pRaster;
 }
-
+/**
+ * Project a 3D vector in world space to a 2D CanvasPoint in screen space.
+ *
+ * @param modelTriangle A 3D Triangle in world space.
+ * @param worldToCamera 4x4 matrix that maps points from the world space to the camera space.
+ * @param focalLength The focal length of the camera.
+ * @param canvasWidth The width of the canvas points are projected to in scale relative to values in world space.
+ * @param canvasHeight The height of the canvas points are projected to in scale relative to values in world space.
+ * @param imageWidth The width of the window points are to be drawn on to.
+ * @param imageHeight The height of the window points are to be drawn on to.
+ * @return canvasTriangle The 2D projection of the provided 3D triangle.
+ */
 CanvasTriangle projectTriangle(const ModelTriangle& modelTriangle, const mat4x4& worldToCamera, float focalLength,
                                float canvasWidth, float canvasHeight,
                                float imageWidth, float imageHeight)
