@@ -14,7 +14,7 @@
  * @param img A loaded image.
  * @param window The window the image is to be drawn onto.
  */
-void drawImage(Image& img, DrawingWindow& window)
+void drawImage(const Image& img, DrawingWindow& window)
 {
   for (int y = 0; y < img.getHeight(); ++y)
   {
@@ -58,7 +58,7 @@ void drawLine(const CanvasPoint& from, const CanvasPoint& to, uint32_t colour, D
  * @param colour A bitpacked RGB colour of the line.
  * @param window The window the image is to be drawn onto.
  */
-void drawTriangle(CanvasTriangle& triangle, uint32_t colour, DrawingWindow& window)
+void drawTriangle(const CanvasTriangle& triangle, uint32_t colour, DrawingWindow& window)
 {
   int j = 2;
   for (int i = 0; i < 3; ++i)
@@ -147,7 +147,7 @@ void fillTriangle(CanvasTriangle& triangle, DrawingWindow& window)
  * @pararm image The image used to texture the triangle.
  * @param window The window the image is to be drawn onto.
  */
-void fillTriangleTexture(CanvasTriangle& triangle, Image& image, DrawingWindow& window)
+void fillTriangleTexture(CanvasTriangle& triangle, const Image& image, DrawingWindow& window)
 {
   sortVertices(triangle);
   CanvasPoint minPoint = triangle.vertices[0];

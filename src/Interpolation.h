@@ -37,7 +37,7 @@ std::vector<float> interpolate(float from, float to, float numValues)
  * @param numValues The number of values to obtain beteen the starting and ending points.
  * @return A vector containing the interpolated values
  */
-std::vector<vec3> interpolate(vec3 from, vec3 to, float numValues)
+std::vector<vec3> interpolate(const vec3& from, const vec3& to, float numValues)
 {
   std::vector<vec3> values;
   

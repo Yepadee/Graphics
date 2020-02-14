@@ -18,18 +18,18 @@ public:
   , payload(payload)
   {}
 
-  uint32_t GetPixel(int x, int y)
+  uint32_t GetPixel(int x, int y) const
   {
     int i = y * width + x;
     return payload[i];
   }
 
-  int getWidth()
+  int getWidth() const
   {
     return width;
   }
 
-  int getHeight()
+  int getHeight() const
   {
     return height;
   }

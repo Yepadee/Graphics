@@ -16,6 +16,7 @@ using namespace glm;
  */
 mat4x4 constructCameraSpace(const vec3& pos, const vec3& angle)
 {
+    // Alias angle components.
     float X = angle.x;
     float Y = angle.y;
     float Z = angle.z;
@@ -46,16 +47,15 @@ CanvasPoint project2D(const vec3& pointWorldSpace, const mat4x4& worldToCamera, 
                       float canvasWidth, float canvasHeight,
                       float imageWidth , float imageHeight)
 {
-    // Translate point in world space to point in camera space:
-    //mat4x4 cameraToWorld = inverse(worldToCamera);
+    // Translate point in world space to point in camera space.
     vec4 pointCamSpace = worldToCamera * vec4(pointWorldSpace, 1.0f);
 
-    // Perspective Projection:
+    // Perspective Projection.
     vec2 pointScreenSpace;
     pointScreenSpace.x = focalLength * pointCamSpace.x / -pointCamSpace.z;
     pointScreenSpace.y = focalLength * pointCamSpace.y / -pointCamSpace.z;
 
-    // Normalize coordinates (range [0.0, 1.0])
+    // Normalize coordinates (range [0.0, 1.0]).
     vec2 pNDC;
     pNDC.x = (pointScreenSpace.x + canvasWidth  / 2.0f) / canvasWidth;
     pNDC.y = (pointScreenSpace.y + canvasHeight / 2.0f) / canvasHeight;
@@ -69,6 +69,7 @@ CanvasPoint project2D(const vec3& pointWorldSpace, const mat4x4& worldToCamera, 
 
     return pRaster;
 }
+
 /**
  * Project a 3D vector in world space to a 2D CanvasPoint in screen space.
  *
