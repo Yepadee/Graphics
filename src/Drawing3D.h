@@ -2,16 +2,23 @@
 
 #include <inttypes.h>
 #include <DrawingWindow.h>
+#include "Interpolation.h"
+#include "PixelUtil.h"
 
-float depthBuffer[WIDTH][HEIGHT];
+float* depthBuffer;
+int dbWidth;
+int dbHeight;
 
-void initDepthBuffer()
+void initDepthBuffer(int width, int height)
 {
-  for (int jj = 0; jj < HEIGHT; ++jj)
+  dbWidth = width;
+  dbHeight = height;
+  depthBuffer = new float[dbWidth*dbHeight];
+  for (int jj = 0; jj < dbHeight; ++jj)
   {
-    for (int ii = 0; ii < WIDTH; ++ii)
+    for (int ii = 0; ii < dbWidth; ++ii)
     {
-      depthBuffer[ii][jj] = std::numeric_limits<float>::infinity();
+      depthBuffer[ii + dbWidth*jj] = (std::numeric_limits<float>::infinity());
     }
   }
 }
@@ -28,15 +35,22 @@ void drawLine(const CanvasPoint& from, const CanvasPoint& to, uint32_t colour, D
 {
   float xDiff = to.x - from.x;
   float yDiff = to.y - from.y;
+  float depthDiff = to.depth - from.depth;
   float numberOfSteps = std::max(abs(xDiff), std::abs(yDiff));
   float xStepSize = xDiff/numberOfSteps;
   float yStepSize = yDiff/numberOfSteps;
+  float depthStepSize = depthDiff/numberOfSteps;
   for (float i=0.0; i<numberOfSteps; i++) {
     float x = from.x + (xStepSize*i);
     float y = from.y + (yStepSize*i);
+    float depth = from.depth + (depthStepSize*i);
     if (x > 0 && x < window.width - 1 && y < window.height - 1 && y > 0)
     {
-      window.setPixelColour(round(x), round(y), colour);
+      if (depth < depthBuffer[(int)(round(x) + dbWidth * round(y))])
+      {
+        depthBuffer[(int)(round(x) + dbWidth * round(y))] = depth;
+        window.setPixelColour(round(x), round(y), colour);
+      }
     }
   }
 }
@@ -98,16 +112,19 @@ void fillTriangle(CanvasTriangle& triangle, DrawingWindow& window)
   // top and bottom of the triangle.
   int yDiff = yEnd - yStart;
   std::vector<float> xPointsRHS = interpolate(minPoint.x, maxPoint.x, yDiff);
+  std::vector<float> zPointsRHS = interpolate(minPoint.depth, maxPoint.depth, yDiff);
 
   // Find the distance between the top of the triangle (min point) and the middle point of the triangle (mid point).
   // Interpolate x's down the top short face of the triangle.
   int yDiffTop = yMid - yStart;
   std::vector<float> xPointsLHS1 = interpolate(minPoint.x, midPoint.x, yDiffTop);
+  std::vector<float> zPointsLHS1 = interpolate(minPoint.depth, midPoint.depth, yDiff);
 
   // Find the distance between the middle point of the triangle (mid point) and the bottom of the triangle (max point).
   // Interpolate x's down the bottom short face of the triangle.
   int yDiffBtm = yEnd - yMid;
   std::vector<float> xPointsLHS2 = interpolate(midPoint.x, maxPoint.x, yDiffBtm);
+  std::vector<float> zPointsLHS2 = interpolate(midPoint.depth, maxPoint.depth, yDiff);
 
   uint32_t colour = packRGB(triangle.colour.red, triangle.colour.green, triangle.colour.blue);
 
@@ -117,7 +134,9 @@ void fillTriangle(CanvasTriangle& triangle, DrawingWindow& window)
   {
     float x1 = xPointsLHS1[(int) (y - yStart)];
     float x2 = xPointsRHS[(int) (y - yStart)];
-    drawLine({x1, y}, {x2, y}, colour, window);
+    float z1 = zPointsLHS1[(int) (y - yStart)];
+    float z2 = zPointsRHS[(int) (y - yStart)];
+    drawLine({x1, y, z1}, {x2, y, z2}, colour, window);
   }
 
   //Fill bottom triangle.
@@ -126,6 +145,8 @@ void fillTriangle(CanvasTriangle& triangle, DrawingWindow& window)
   {
     float x1 = xPointsLHS2[(int) (y - yMid)];
     float x2 = xPointsRHS[(int) (y - yStart)];
-    drawLine({x1, y}, {x2, y}, colour, window);
+    float z1 = zPointsLHS2[(int) (y - yMid)];
+    float z2 = zPointsRHS[(int) (y - yStart)];
+    drawLine({x1, y, z1}, {x2, y, z2}, colour, window);
   }
 }

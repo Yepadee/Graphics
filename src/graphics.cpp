@@ -6,7 +6,7 @@
 #include <fstream>
 #include <vector>
 
-#include "Drawing2D.h"
+#include "Drawing3D.h"
 #include "Image.h"
 #include "Object.h"
 #include "Camera.h"
@@ -47,6 +47,7 @@ std::vector<Object> objects = loadOBJ("models/cornell-box.obj", 1.0f);
 int main(int argc, char* argv[])
 {
   SDL_Event event;
+  initDepthBuffer(WIDTH, HEIGHT);
 
   while(true)
   {
