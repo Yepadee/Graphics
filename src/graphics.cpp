@@ -48,7 +48,6 @@ int main(int argc, char* argv[])
 {
   SDL_Event event;
   initDepthBuffer(WIDTH, HEIGHT);
-
   while(true)
   {
     // We MUST poll for events - otherwise the window will freeze !
@@ -78,7 +77,7 @@ void drawRandomTriangle()
 void draw()
 {
   window.clearPixels();
-
+  clearDepthBuffer();
   glm::mat4x4 cameraToWorld = constructCameraSpace(cameraPos, cameraAngle);
 
   for (Object obj : objects)

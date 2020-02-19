@@ -18,7 +18,18 @@ void initDepthBuffer(int width, int height)
   {
     for (int ii = 0; ii < dbWidth; ++ii)
     {
-      depthBuffer[ii + dbWidth*jj] = (std::numeric_limits<float>::infinity());
+      depthBuffer[ii + dbWidth*jj] = 1/(-std::numeric_limits<float>::infinity());
+    }
+  }
+}
+
+void clearDepthBuffer()
+{
+  for (int jj = 0; jj < dbHeight; ++jj)
+  {
+    for (int ii = 0; ii < dbWidth; ++ii)
+    {
+      depthBuffer[ii + dbWidth*jj] = 1/(-std::numeric_limits<float>::infinity());
     }
   }
 }
@@ -43,10 +54,10 @@ void drawLine(const CanvasPoint& from, const CanvasPoint& to, uint32_t colour, D
   for (float i=0.0; i<numberOfSteps; i++) {
     float x = from.x + (xStepSize*i);
     float y = from.y + (yStepSize*i);
-    float depth = from.depth + (depthStepSize*i);
+    float depth = 1/(from.depth + (depthStepSize*i));
     if (x > 0 && x < window.width - 1 && y < window.height - 1 && y > 0)
     {
-      if (depth < depthBuffer[(int)(round(x) + dbWidth * round(y))])
+      if (depth <= depthBuffer[(int)(round(x) + dbWidth * round(y))])
       {
         depthBuffer[(int)(round(x) + dbWidth * round(y))] = depth;
         window.setPixelColour(round(x), round(y), colour);
