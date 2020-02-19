@@ -33,7 +33,7 @@ std::vector<CanvasTriangle> drawList;
 
 Image image = loadPPM("textures/texture.ppm");
 
-glm::vec3 cameraPos(0.2f, -2.5f, -2.8f);
+glm::vec3 cameraPos(0.0f, 0.0f, 8.0f);
 glm::vec3 cameraAngle(0.0f, 0.0f, 0.0f);
 
 float canvasWidth = WIDTH;

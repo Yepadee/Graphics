@@ -28,7 +28,7 @@ mat4x4 constructCameraSpace(const vec3& pos, const vec3& angle)
      0.0f         ,  0.0f                                ,  0.0f                                , 1.0f
     };
     
-    return transpose(make_mat4(values));
+    return transpose(inverse(make_mat4(values)));
 }
 
 /**

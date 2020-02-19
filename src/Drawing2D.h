@@ -36,14 +36,30 @@ void drawImage(const Image& img, DrawingWindow& window)
  */
 void drawLine(const CanvasPoint& from, const CanvasPoint& to, uint32_t colour, DrawingWindow& window)
 {
-  float xDiff = to.x - from.x;
-  float yDiff = to.y - from.y;
+  float xFrom = from.x;
+  float yFrom = from.y;
+  float xTo = to.x;
+  float yTo = to.y;
+
+  if (xFrom < 0) xFrom = 0;
+  if (yFrom < 0) yFrom = 0;
+  if (xTo < 0) xTo = 0;
+  if (yTo < 0) yTo = 0;
+
+  if (xFrom > window.width) xFrom = window.width - 1;
+  if (yFrom > window.height) yFrom = window.height - 1;
+  if (xTo > window.width) xTo = window.width - 1;
+  if (yTo > window.height) yTo = window.height - 1; 
+
+  float xDiff = xTo - xFrom;
+  float yDiff = yTo - yFrom;
   float numberOfSteps = std::max(abs(xDiff), std::abs(yDiff));
   float xStepSize = xDiff/numberOfSteps;
   float yStepSize = yDiff/numberOfSteps;
+
   for (float i=0.0; i<numberOfSteps; i++) {
-    float x = from.x + (xStepSize*i);
-    float y = from.y + (yStepSize*i);
+    float x = xFrom + (xStepSize*i);
+    float y = yFrom + (yStepSize*i);
     if (x > 0 && x < window.width - 1 && y < window.height - 1 && y > 0)
     {
       window.setPixelColour(round(x), round(y), colour);
