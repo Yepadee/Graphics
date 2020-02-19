@@ -28,7 +28,50 @@ mat4x4 constructCameraSpace(const vec3& pos, const vec3& angle)
      0.0f         ,  0.0f                                ,  0.0f                                , 1.0f
     };
     
-    return transpose(inverse(make_mat4(values)));
+    return transpose(make_mat4(values));
+}
+
+void translate(glm::mat4x4& cameraToWorld, const vec3& translation)
+{
+    cameraToWorld[3][0] += translation[0];
+    cameraToWorld[3][1] += translation[1];
+    cameraToWorld[3][2] += translation[2];
+}
+
+void rotateX(glm::mat4x4& cameraToWorld, float X)
+{
+    float values[16] = {
+     1.0f, 0.0f  , 0.0f   , 0.0f,
+     0.0f, cos(X), -sin(X), 0.0f,
+     0.0f, sin(X), cos(X) , 0.0f,
+     0.0f, 0.0f  , 0.0f   , 1.0f
+    };
+
+    cameraToWorld *= transpose(make_mat4(values));
+}
+
+void rotateY(glm::mat4x4& cameraToWorld, float Y)
+{
+    float values[16] = {
+     cos(Y) , 0.0f, sin(Y), 0.0f,
+     0.0f   , 1.0f, 0.0f  , 0.0f,
+     -sin(Y), 0.0f, cos(Y), 0.0f,
+     0.0f   , 0.0f, 0.0f  , 1.0f
+    };
+
+    cameraToWorld *= transpose(make_mat4(values));
+}
+
+void rotateZ(glm::mat4x4& cameraToWorld, float Z)
+{
+    float values[16] = {
+     cos(Z), -sin(Z), 0.0f, 0.0f,
+     sin(Z), cos(Z) , 0.0f, 0.0f,
+     0.0f  , 0.0f   , 0.0f, 0.0f,
+     0.0f  , 0.0f   , 0.0f, 1.0f
+    };
+
+    cameraToWorld *= transpose(make_mat4(values));
 }
 
 /**

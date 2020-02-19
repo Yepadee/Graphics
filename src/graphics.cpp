@@ -35,6 +35,7 @@ Image image = loadPPM("textures/texture.ppm");
 
 glm::vec3 cameraPos(0.0f, 0.0f, 8.0f);
 glm::vec3 cameraAngle(0.0f, 0.0f, 0.0f);
+glm::mat4x4 cameraToWorld = constructCameraSpace(cameraPos, cameraAngle);
 
 float canvasWidth = WIDTH;
 float canvasHeight = HEIGHT;
@@ -78,13 +79,16 @@ void draw()
 {
   window.clearPixels();
   clearDepthBuffer();
-  glm::mat4x4 cameraToWorld = constructCameraSpace(cameraPos, cameraAngle);
+  //glm::mat4x4 cameraToWorld = constructCameraSpace(cameraPos, cameraAngle);
+
+
+  glm::mat4x4 worldToCamera = glm::inverse(cameraToWorld);
 
   for (Object obj : objects)
   {
     for (ModelTriangle m : obj.triangles)
     {
-      CanvasTriangle t = projectTriangle(m, cameraToWorld, focalLength, canvasWidth, canvasHeight, imageWidth, imageHeight);
+      CanvasTriangle t = projectTriangle(m, worldToCamera, focalLength, canvasWidth, canvasHeight, imageWidth, imageHeight);
       fillTriangle(t, window);
     }
   }
@@ -105,28 +109,30 @@ void update()
 void handleEvent(SDL_Event event)
 {
   float vel = 0.1f;
+  glm::vec3 translation = {0, 0, 0};
 
   if(event.type == SDL_KEYDOWN) {
     // Position
-    if(event.key.keysym.sym == SDLK_LEFT) cameraPos.x += vel;
-    if(event.key.keysym.sym == SDLK_RIGHT) cameraPos.x -= vel;
+    if(event.key.keysym.sym == SDLK_LEFT) translation.x -= vel;
+    if(event.key.keysym.sym == SDLK_RIGHT) translation.x += vel;
 
-    if(event.key.keysym.sym == SDLK_UP) cameraPos.z += vel;
-    if(event.key.keysym.sym == SDLK_DOWN) cameraPos.z -= vel;
+    if(event.key.keysym.sym == SDLK_UP) translation.z += vel;
+    if(event.key.keysym.sym == SDLK_DOWN) translation.z -= vel;
 
-    if(event.key.keysym.sym == SDLK_LCTRL) cameraPos.y += vel;
-    if(event.key.keysym.sym == SDLK_LSHIFT) cameraPos.y -= vel;
+    if(event.key.keysym.sym == SDLK_LCTRL) translation.y -= vel;
+    if(event.key.keysym.sym == SDLK_LSHIFT) translation.y += vel;
     
+    translate(cameraToWorld, translation);
 
     // Angle
-    if(event.key.keysym.sym == SDLK_w) cameraAngle.x += vel;
-    if(event.key.keysym.sym == SDLK_s) cameraAngle.x -= vel;
+    if(event.key.keysym.sym == SDLK_w) rotateX(cameraToWorld, -vel);
+    if(event.key.keysym.sym == SDLK_s) rotateX(cameraToWorld, vel);
 
-    if(event.key.keysym.sym == SDLK_d) cameraAngle.y += vel;
-    if(event.key.keysym.sym == SDLK_a) cameraAngle.y -= vel;
+    if(event.key.keysym.sym == SDLK_d) rotateY(cameraToWorld, vel);
+    if(event.key.keysym.sym == SDLK_a) rotateY(cameraToWorld, -vel);
 
-    if(event.key.keysym.sym == SDLK_q) cameraAngle.z += vel;
-    if(event.key.keysym.sym == SDLK_e) cameraAngle.z -= vel;
+    if(event.key.keysym.sym == SDLK_q) rotateZ(cameraToWorld, vel);
+    if(event.key.keysym.sym == SDLK_e) rotateZ(cameraToWorld, -vel);
 
     if(event.key.keysym.sym == SDLK_u) focalLength += 10;
     if(event.key.keysym.sym == SDLK_i) focalLength -= 10;
