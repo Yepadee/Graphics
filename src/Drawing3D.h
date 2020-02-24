@@ -129,13 +129,13 @@ void fillTriangle(CanvasTriangle& triangle, DrawingWindow& window)
   // Interpolate x's down the top short face of the triangle.
   int yDiffTop = yMid - yStart;
   std::vector<float> xPointsLHS1 = interpolate(minPoint.x, midPoint.x, yDiffTop);
-  std::vector<float> zPointsLHS1 = interpolate(minPoint.depth, midPoint.depth, yDiff);
+  std::vector<float> zPointsLHS1 = interpolate(minPoint.depth, midPoint.depth, yDiffTop);
 
   // Find the distance between the middle point of the triangle (mid point) and the bottom of the triangle (max point).
   // Interpolate x's down the bottom short face of the triangle.
   int yDiffBtm = yEnd - yMid;
   std::vector<float> xPointsLHS2 = interpolate(midPoint.x, maxPoint.x, yDiffBtm);
-  std::vector<float> zPointsLHS2 = interpolate(midPoint.depth, maxPoint.depth, yDiff);
+  std::vector<float> zPointsLHS2 = interpolate(midPoint.depth, maxPoint.depth, yDiffBtm);
 
   uint32_t colour = packRGB(triangle.colour.red, triangle.colour.green, triangle.colour.blue);
 
