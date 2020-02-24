@@ -67,7 +67,7 @@ void rotateZ(glm::mat4x4& cameraToWorld, float Z)
     float values[16] = {
      cos(Z), -sin(Z), 0.0f, 0.0f,
      sin(Z), cos(Z) , 0.0f, 0.0f,
-     0.0f  , 0.0f   , 0.0f, 0.0f,
+     0.0f  , 0.0f   , 1.0f, 0.0f,
      0.0f  , 0.0f   , 0.0f, 1.0f
     };
 
@@ -108,7 +108,7 @@ CanvasPoint project2D(const vec3& pointWorldSpace, const mat4x4& worldToCamera, 
     CanvasPoint pRaster;
     pRaster.x = std::floor(pNDC.x * imageWidth);
     pRaster.y = std::floor((1.0f - pNDC.y) * imageHeight);
-    pRaster.depth = pointCamSpace.z;
+    pRaster.depth = -pointCamSpace.z;
 
     return pRaster;
 }
