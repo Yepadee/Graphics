@@ -9,30 +9,26 @@ float* depthBuffer;
 int dbWidth;
 int dbHeight;
 
-void initDepthBuffer(int width, int height)
-{
-  dbWidth = width;
-  dbHeight = height;
-  depthBuffer = new float[dbWidth*dbHeight];
-  for (int jj = 0; jj < dbHeight; ++jj)
-  {
-    for (int ii = 0; ii < dbWidth; ++ii)
-    {
-      depthBuffer[ii + dbWidth*jj] = std::numeric_limits<float>::infinity();
-    }
-  }
-}
-
 void clearDepthBuffer()
 {
   for (int jj = 0; jj < dbHeight; ++jj)
   {
     for (int ii = 0; ii < dbWidth; ++ii)
     {
-      depthBuffer[ii + dbWidth*jj] = std::numeric_limits<float>::infinity();
+      depthBuffer[ii + dbWidth*jj] = 0;
     }
   }
 }
+
+void initDepthBuffer(int width, int height)
+{
+  dbWidth = width;
+  dbHeight = height;
+  depthBuffer = new float[dbWidth*dbHeight];
+  clearDepthBuffer();
+}
+
+
 
 /**
  * Draws a line on a window between two canvas points.
@@ -47,20 +43,23 @@ void drawLine(const CanvasPoint& from, const CanvasPoint& to, uint32_t colour, D
   float xDiff = to.x - from.x;
   float yDiff = to.y - from.y;
   float depthDiff = to.depth - from.depth;
+
   float numberOfSteps = std::max(abs(xDiff), std::abs(yDiff));
   float xStepSize = xDiff/numberOfSteps;
   float yStepSize = yDiff/numberOfSteps;
   float depthStepSize = depthDiff/numberOfSteps;
+
   for (float i=0.0; i<numberOfSteps; i++) {
     float x = from.x + (xStepSize*i);
     float y = from.y + (yStepSize*i);
     float depth = from.depth + (depthStepSize*i);
+
     if (x > 0 && x < window.width - 1 && y < window.height - 1 && y > 0)
     {
-      if (depth < depthBuffer[(int)(floor(x) + dbWidth * floor(y))])
+      if (depth > depthBuffer[(int)(round(x) + dbWidth * round(y))])
       {
-        depthBuffer[(int)(floor(x) + dbWidth * floor(y))] = depth;
-        window.setPixelColour(floor(x), floor(y), colour);
+        depthBuffer[(int)(round(x) + dbWidth * round(y))] = depth;
+        window.setPixelColour(round(x), round(y), colour);
       }
     }
   }

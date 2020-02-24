@@ -108,7 +108,7 @@ CanvasPoint project2D(const vec3& pointWorldSpace, const mat4x4& worldToCamera, 
     CanvasPoint pRaster;
     pRaster.x = std::floor(pNDC.x * imageWidth);
     pRaster.y = std::floor((1.0f - pNDC.y) * imageHeight);
-    pRaster.depth = -pointCamSpace.z;
+    pRaster.depth = -1.0f/pointCamSpace.z;
 
     return pRaster;
 }
