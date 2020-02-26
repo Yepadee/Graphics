@@ -10,6 +10,7 @@
 #include "Image.h"
 #include "Object.h"
 #include "Camera.h"
+#include "Rasterise.h"
 
 #include "KeyInput.h"
 
@@ -76,7 +77,7 @@ void draw()
   {
     for (ModelTriangle m : obj.triangles)
     {
-      CanvasTriangle t = projectTriangle(m, worldToCamera, focalLength, canvasWidth, canvasHeight, imageWidth, imageHeight);
+      CanvasTriangle t = rasteriseTriangle(m, worldToCamera, focalLength, canvasWidth, canvasHeight, imageWidth, imageHeight);
       fillTriangle(t, window);
     }
   }
