@@ -84,7 +84,6 @@ void draw()
 
   for (CanvasTriangle t : drawList)
   {
-    //fillTriangle(t);
     uint32 rgb = packRGB(t.colour.red, t.colour.green, t.colour.blue);
     drawTriangle(t, rgb, window);
   }
@@ -97,8 +96,8 @@ void update()
   // Function for performing animation (shifting artifacts or moving the camera)
   updateKeyboard();
 
-  cameraToWorld = rotateAbout({0, 0, 0}, 10, theta);
-  theta += 0.1f;
+  cameraToWorld = rotateAbout({0, 0, 0}, 3, 10, theta);
+  theta += 0.03f;
 
   if(keyDown(SDL_SCANCODE_LEFT)) translation.x -= vel;
   if(keyDown(SDL_SCANCODE_RIGHT)) translation.x += vel;

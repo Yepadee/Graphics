@@ -37,13 +37,14 @@ mat4x4 lookAt(const vec3& from, const vec3& to)
  * Rotate's the camera about a point.
  *
  * @param centre The centre point of rotation.
+ * @param elevation The camera's elevation above the centre .
  * @param radius The radius of the rotation.
  * @param angle The angle of rotation
  * @return 4x4 homogenious matrix that maps vertices in world space to vertices on camera space.
  */
-mat4x4 rotateAbout(const vec3& centre, float radius, float angle)
+mat4x4 rotateAbout(const vec3& centre, float elevation, float radius, float angle)
 {
-    vec3 from(centre.x + radius * sin(angle), centre.y, centre.z + radius * cos(angle));
+    vec3 from(centre.x + radius * sin(angle), elevation + centre.y, centre.z + radius * cos(angle));
     return lookAt(from, centre);
 }
 
@@ -69,6 +70,22 @@ mat4x4 constructCameraSpace(const vec3& pos, const vec3& angle)
     };
     
     return transpose(make_mat4(values));
+}
+
+mat3x3 constructCameraSpace(const vec3& angle)
+{
+    // Alias angle components.
+    float X = angle.x;
+    float Y = angle.y;
+    float Z = angle.z;
+
+    float values[16] = {
+     cos(Y)*cos(Z), -cos(X)*sin(Z) + sin(X)*sin(Y)*cos(Z),  sin(X)*sin(Z) + cos(X)*sin(Y)*cos(Z),
+     cos(Y)*sin(Z),  cos(X)*cos(Z) + sin(X)*sin(Y)*sin(Z), -sin(X)*cos(Z) + cos(X)*sin(Y)*sin(Z),
+    -sin(Y)       ,  sin(X)*cos(Y)                       ,  cos(X)*cos(Y)                       
+    };
+    
+    return transpose(make_mat3(values));
 }
 
 void rotateX(mat4x4& cameraToWorld, float X)
