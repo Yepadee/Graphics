@@ -25,7 +25,7 @@ mat4x4 lookAt(const vec3& from, const vec3& to)
 
     float values[16] = {
      right.x, up.x,  fwd.x, from.x,
-     right.y, up.y, -fwd.y, from.y,
+     right.y, up.y,  fwd.y, from.y,
      right.z, up.z,  fwd.z, from.z,
      0.0f   , 0.0f,  0.0f , 1.0f
     };
@@ -135,7 +135,6 @@ CanvasTriangle projectTriangle(const ModelTriangle& modelTriangle, const mat4x4&
 
     return canvasTriangle;
 }
-
 
 void rotateX(mat4x4& cameraToWorld, float X)
 {
