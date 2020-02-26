@@ -244,3 +244,18 @@ void fillTriangleTexture(CanvasTriangle& triangle, const Image& image, DrawingWi
     }
   }
 }
+
+void drawRandomTriangle()
+{
+  int r = rand() % 255;
+  int g = rand() % 255;
+  int b = rand() % 255;
+
+  CanvasPoint p1(rand() % window.width, rand() % window.height);
+  CanvasPoint p2(rand() % window.width, rand() % window.height);
+  CanvasPoint p3(rand() % window.width, rand() % window.height);
+
+  CanvasTriangle t(p1,p2,p3, Colour(r,g,b));
+
+  triangles.push_back(t);
+}

@@ -28,8 +28,6 @@ void initDepthBuffer(int width, int height)
   clearDepthBuffer();
 }
 
-
-
 /**
  * Draws a line on a window between two canvas points.
  *
@@ -40,6 +38,7 @@ void initDepthBuffer(int width, int height)
  */
 void drawLine(const CanvasPoint& from, const CanvasPoint& to, uint32_t colour, DrawingWindow& window)
 {
+  if (from.depth < 0 || to.depth < 0) return;
   float xDiff = to.x - from.x;
   float yDiff = to.y - from.y;
   float depthDiff = to.depth - from.depth;
@@ -54,13 +53,10 @@ void drawLine(const CanvasPoint& from, const CanvasPoint& to, uint32_t colour, D
     float y = from.y + (yStepSize*i);
     float depth = from.depth + (depthStepSize*i);
 
-    if (x > 0 && x < window.width - 1 && y < window.height - 1 && y > 0)
+    if (depth > depthBuffer[(int)(floor(x) + dbWidth * floor(y))])
     {
-      if (depth > depthBuffer[(int)(round(x) + dbWidth * round(y))])
-      {
-        depthBuffer[(int)(round(x) + dbWidth * round(y))] = depth;
-        window.setPixelColour(round(x), round(y), colour);
-      }
+      depthBuffer[(int)(floor(x) + dbWidth * floor(y))] = depth;
+      window.setPixelColour(floor(x), floor(y), colour);
     }
   }
 }
@@ -94,6 +90,15 @@ void sortVertices(CanvasTriangle& triangle)
        if (triangle.vertices[1].y < triangle.vertices[0].y) 
           std::swap(triangle.vertices[1], triangle.vertices[0]); 
     }
+}
+
+void fitToWindow(CanvasPoint& point, const DrawingWindow& window)
+{
+  if (point.x > window.width) point.x = window.width - 2;
+  if (point.y > window.height) point.y = window.height - 2;
+
+  if (point.x < 0) point.x = 0;
+  if (point.y < 0) point.y = 0;
 }
 
 /**
@@ -146,7 +151,14 @@ void fillTriangle(CanvasTriangle& triangle, DrawingWindow& window)
     float x2 = xPointsRHS[(int) (y - yStart)];
     float z1 = zPointsLHS1[(int) (y - yStart)];
     float z2 = zPointsRHS[(int) (y - yStart)];
-    drawLine({x1, y, z1}, {x2, y, z2}, colour, window);
+
+    CanvasPoint p1 = {x1, y, z1};
+    CanvasPoint p2 = {x2, y, z2};
+
+    fitToWindow(p1, window);
+    fitToWindow(p2, window);
+
+    drawLine(p1, p2, colour, window);
   }
 
   //Fill bottom triangle.
@@ -157,6 +169,13 @@ void fillTriangle(CanvasTriangle& triangle, DrawingWindow& window)
     float x2 = xPointsRHS[(int) (y - yStart)];
     float z1 = zPointsLHS2[(int) (y - yMid)];
     float z2 = zPointsRHS[(int) (y - yStart)];
-    drawLine({x1, y, z1}, {x2, y, z2}, colour, window);
+
+    CanvasPoint p1 = {x1, y, z1};
+    CanvasPoint p2 = {x2, y, z2};
+
+    fitToWindow(p1, window);
+    fitToWindow(p2, window);
+
+    drawLine(p1, p2, colour, window);
   }
 }

@@ -11,6 +11,8 @@
 #include "Object.h"
 #include "Camera.h"
 
+#include "KeyInput.h"
+
 using namespace std;
 using namespace glm;
 
@@ -35,7 +37,10 @@ Image image = loadPPM("textures/texture.ppm");
 
 glm::vec3 cameraPos(0.0f, 0.0f, 8.0f);
 glm::vec3 cameraAngle(0.0f, 0.0f, 0.0f);
-glm::mat4x4 cameraToWorld = constructCameraSpace(cameraPos, cameraAngle);
+//glm::mat4x4 cameraToWorld = constructCameraSpace(cameraPos, cameraAngle);
+glm::mat4x4 cameraToWorld = lookAt({0, 2, 5}, {0, 0, 0});
+float theta = 0.0f;
+
 
 float canvasWidth = WIDTH;
 float canvasHeight = HEIGHT;
@@ -60,27 +65,10 @@ int main(int argc, char* argv[])
   }
 }
 
-void drawRandomTriangle()
-{
-  int r = rand() % 255;
-  int g = rand() % 255;
-  int b = rand() % 255;
-
-  CanvasPoint p1(rand() % window.width, rand() % window.height);
-  CanvasPoint p2(rand() % window.width, rand() % window.height);
-  CanvasPoint p3(rand() % window.width, rand() % window.height);
-
-  CanvasTriangle t(p1,p2,p3, Colour(r,g,b));
-
-  triangles.push_back(t);
-}
-
 void draw()
 {
   window.clearPixels();
   clearDepthBuffer();
-  //glm::mat4x4 cameraToWorld = constructCameraSpace(cameraPos, cameraAngle);
-
 
   glm::mat4x4 worldToCamera = glm::inverse(cameraToWorld);
 
@@ -103,40 +91,48 @@ void draw()
 
 void update()
 {
+  float vel = 0.02f;
+  glm::vec3 translation = {0, 0, 0};
   // Function for performing animation (shifting artifacts or moving the camera)
+  updateKeyboard();
+
+  cameraToWorld = orbit({0, 0, 0}, 10, theta);
+  theta += 0.1f;
+
+  if(keyDown(SDL_SCANCODE_LEFT)) translation.x -= vel;
+  if(keyDown(SDL_SCANCODE_RIGHT)) translation.x += vel;
+
+  if(keyDown(SDL_SCANCODE_UP)) translation.z += vel;
+  if(keyDown(SDL_SCANCODE_DOWN)) translation.z -= vel;
+
+  if(keyDown(SDL_SCANCODE_Z)) translation.y -= vel;
+  if(keyDown(SDL_SCANCODE_X)) translation.y += vel;
+  
+  
+  // Angle
+  if(keyDown(SDL_SCANCODE_W)) rotateX(cameraToWorld, -vel);
+  if(keyDown(SDL_SCANCODE_S)) rotateX(cameraToWorld, vel);
+
+  if(keyDown(SDL_SCANCODE_D)) rotateY(cameraToWorld, vel);
+  if(keyDown(SDL_SCANCODE_A)) rotateY(cameraToWorld, -vel);
+
+  if(keyDown(SDL_SCANCODE_Q)) rotateZ(cameraToWorld, vel);
+  if(keyDown(SDL_SCANCODE_E)) rotateZ(cameraToWorld, -vel);
+
+  if(keyDown(SDL_SCANCODE_U)) focalLength += 10;
+  if(keyDown(SDL_SCANCODE_I)) focalLength -= 10;
+
+  translate(cameraToWorld, translation);
+
+
 }
 
 void handleEvent(SDL_Event event)
 {
-  float vel = 0.1f;
-  glm::vec3 translation = {0, 0, 0};
+
 
   if(event.type == SDL_KEYDOWN) {
     // Position
-    if(event.key.keysym.sym == SDLK_LEFT) translation.x -= vel;
-    if(event.key.keysym.sym == SDLK_RIGHT) translation.x += vel;
-
-    if(event.key.keysym.sym == SDLK_UP) translation.z += vel;
-    if(event.key.keysym.sym == SDLK_DOWN) translation.z -= vel;
-
-    if(event.key.keysym.sym == SDLK_LCTRL) translation.y -= vel;
-    if(event.key.keysym.sym == SDLK_LSHIFT) translation.y += vel;
-    
-    translate(cameraToWorld, translation);
-
-    // Angle
-    if(event.key.keysym.sym == SDLK_w) rotateX(cameraToWorld, -vel);
-    if(event.key.keysym.sym == SDLK_s) rotateX(cameraToWorld, vel);
-
-    if(event.key.keysym.sym == SDLK_d) rotateY(cameraToWorld, vel);
-    if(event.key.keysym.sym == SDLK_a) rotateY(cameraToWorld, -vel);
-
-    if(event.key.keysym.sym == SDLK_q) rotateZ(cameraToWorld, vel);
-    if(event.key.keysym.sym == SDLK_e) rotateZ(cameraToWorld, -vel);
-
-    if(event.key.keysym.sym == SDLK_u) focalLength += 10;
-    if(event.key.keysym.sym == SDLK_i) focalLength -= 10;
-
     std::cout << cameraPos.x << ", " << cameraPos.y << ", " << cameraPos.z <<std::endl;
     std::cout << cameraAngle.x << ", " << cameraAngle.y << ", " << cameraAngle.z << std::endl << std::endl;
   }

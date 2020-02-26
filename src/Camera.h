@@ -7,6 +7,23 @@
 
 using namespace glm;
 
+mat4x4 lookAt(const vec3& from, const vec3& to)
+{
+    vec3 fwd = normalize(from - to);
+    vec3 yUp(0,1,0);
+    vec3 right = cross(normalize(yUp), fwd);
+    vec3 up = cross(fwd, right);
+
+    float values[16] = {
+     right.x, up.x,  fwd.x, from.x,
+     right.y, up.y, -fwd.y, from.y,
+     right.z, up.z,  fwd.z, from.z,
+     0.0f   , 0.0f,  0.0f , 1.0f
+    };
+    
+    return transpose(make_mat4(values));
+}
+
 /**
  * Construct homogenious world-to-camera matrix.
  *
@@ -31,14 +48,7 @@ mat4x4 constructCameraSpace(const vec3& pos, const vec3& angle)
     return transpose(make_mat4(values));
 }
 
-void translate(glm::mat4x4& cameraToWorld, const vec3& translation)
-{
-    cameraToWorld[3][0] += translation[0];
-    cameraToWorld[3][1] += translation[1];
-    cameraToWorld[3][2] += translation[2];
-}
-
-void rotateX(glm::mat4x4& cameraToWorld, float X)
+void rotateX(mat4x4& cameraToWorld, float X)
 {
     float values[16] = {
      1.0f, 0.0f  , 0.0f   , 0.0f,
@@ -50,7 +60,7 @@ void rotateX(glm::mat4x4& cameraToWorld, float X)
     cameraToWorld *= transpose(make_mat4(values));
 }
 
-void rotateY(glm::mat4x4& cameraToWorld, float Y)
+void rotateY(mat4x4& cameraToWorld, float Y)
 {
     float values[16] = {
      cos(Y) , 0.0f, sin(Y), 0.0f,
@@ -62,7 +72,7 @@ void rotateY(glm::mat4x4& cameraToWorld, float Y)
     cameraToWorld *= transpose(make_mat4(values));
 }
 
-void rotateZ(glm::mat4x4& cameraToWorld, float Z)
+void rotateZ(mat4x4& cameraToWorld, float Z)
 {
     float values[16] = {
      cos(Z), -sin(Z), 0.0f, 0.0f,
@@ -73,6 +83,14 @@ void rotateZ(glm::mat4x4& cameraToWorld, float Z)
 
     cameraToWorld *= transpose(make_mat4(values));
 }
+
+void translate(mat4x4& cameraToWorld, const vec3& translation)
+{
+    cameraToWorld[3][0] += translation[0];
+    cameraToWorld[3][1] += translation[1];
+    cameraToWorld[3][2] += translation[2];
+}
+
 
 /**
  * Project a 3D vector in world space to a 2D CanvasPoint in screen space.
@@ -102,7 +120,6 @@ CanvasPoint project2D(const vec3& pointWorldSpace, const mat4x4& worldToCamera, 
     vec2 pNDC;
     pNDC.x = (pointScreenSpace.x + canvasWidth  / 2.0f) / canvasWidth;
     pNDC.y = (pointScreenSpace.y + canvasHeight / 2.0f) / canvasHeight;
-
 
     // Convert to pixel coords.
     CanvasPoint pRaster;
@@ -138,4 +155,10 @@ CanvasTriangle projectTriangle(const ModelTriangle& modelTriangle, const mat4x4&
     }
 
     return canvasTriangle;
+}
+
+mat4x4 orbit(const vec3& centre, float radius, float angle)
+{
+    vec3 from(centre.x + radius * sin(angle), centre.y, centre.z + radius * cos(angle));
+    return lookAt(from, centre);
 }
