@@ -96,7 +96,7 @@ void update()
   // Function for performing animation (shifting artifacts or moving the camera)
   updateKeyboard();
 
-  cameraToWorld = orbit({0, 0, 0}, 10, theta);
+  cameraToWorld = rotateAbout({0, 0, 0}, 10, theta);
   theta += 0.1f;
 
   if(keyDown(SDL_SCANCODE_LEFT)) translation.x -= vel;

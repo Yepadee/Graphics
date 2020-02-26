@@ -7,6 +7,15 @@
 
 using namespace glm;
 
+/**
+ * Construct homogenious world-to-camera matrix
+ * using the camera's position and a point the
+ * camera is looking at.
+ *
+ * @param from A 3D position vector of camera.
+ * @param to A 3D position the camera is looking at.
+ * @return 4x4 homogenious matrix that maps vertices in world space to vertices on camera space.
+ */
 mat4x4 lookAt(const vec3& from, const vec3& to)
 {
     vec3 fwd = normalize(from - to);
@@ -22,6 +31,20 @@ mat4x4 lookAt(const vec3& from, const vec3& to)
     };
     
     return transpose(make_mat4(values));
+}
+
+/**
+ * Rotate's the camera about a point.
+ *
+ * @param centre The centre point of rotation.
+ * @param radius The radius of the rotation.
+ * @param angle The angle of rotation
+ * @return 4x4 homogenious matrix that maps vertices in world space to vertices on camera space.
+ */
+mat4x4 rotateAbout(const vec3& centre, float radius, float angle)
+{
+    vec3 from(centre.x + radius * sin(angle), centre.y, centre.z + radius * cos(angle));
+    return lookAt(from, centre);
 }
 
 /**
@@ -47,50 +70,6 @@ mat4x4 constructCameraSpace(const vec3& pos, const vec3& angle)
     
     return transpose(make_mat4(values));
 }
-
-void rotateX(mat4x4& cameraToWorld, float X)
-{
-    float values[16] = {
-     1.0f, 0.0f  , 0.0f   , 0.0f,
-     0.0f, cos(X), -sin(X), 0.0f,
-     0.0f, sin(X), cos(X) , 0.0f,
-     0.0f, 0.0f  , 0.0f   , 1.0f
-    };
-
-    cameraToWorld *= transpose(make_mat4(values));
-}
-
-void rotateY(mat4x4& cameraToWorld, float Y)
-{
-    float values[16] = {
-     cos(Y) , 0.0f, sin(Y), 0.0f,
-     0.0f   , 1.0f, 0.0f  , 0.0f,
-     -sin(Y), 0.0f, cos(Y), 0.0f,
-     0.0f   , 0.0f, 0.0f  , 1.0f
-    };
-
-    cameraToWorld *= transpose(make_mat4(values));
-}
-
-void rotateZ(mat4x4& cameraToWorld, float Z)
-{
-    float values[16] = {
-     cos(Z), -sin(Z), 0.0f, 0.0f,
-     sin(Z), cos(Z) , 0.0f, 0.0f,
-     0.0f  , 0.0f   , 1.0f, 0.0f,
-     0.0f  , 0.0f   , 0.0f, 1.0f
-    };
-
-    cameraToWorld *= transpose(make_mat4(values));
-}
-
-void translate(mat4x4& cameraToWorld, const vec3& translation)
-{
-    cameraToWorld[3][0] += translation[0];
-    cameraToWorld[3][1] += translation[1];
-    cameraToWorld[3][2] += translation[2];
-}
-
 
 /**
  * Project a 3D vector in world space to a 2D CanvasPoint in screen space.
@@ -157,8 +136,46 @@ CanvasTriangle projectTriangle(const ModelTriangle& modelTriangle, const mat4x4&
     return canvasTriangle;
 }
 
-mat4x4 orbit(const vec3& centre, float radius, float angle)
+
+void rotateX(mat4x4& cameraToWorld, float X)
 {
-    vec3 from(centre.x + radius * sin(angle), centre.y, centre.z + radius * cos(angle));
-    return lookAt(from, centre);
+    float values[16] = {
+     1.0f, 0.0f  , 0.0f   , 0.0f,
+     0.0f, cos(X), -sin(X), 0.0f,
+     0.0f, sin(X), cos(X) , 0.0f,
+     0.0f, 0.0f  , 0.0f   , 1.0f
+    };
+
+    cameraToWorld *= transpose(make_mat4(values));
+}
+
+void rotateY(mat4x4& cameraToWorld, float Y)
+{
+    float values[16] = {
+     cos(Y) , 0.0f, sin(Y), 0.0f,
+     0.0f   , 1.0f, 0.0f  , 0.0f,
+     -sin(Y), 0.0f, cos(Y), 0.0f,
+     0.0f   , 0.0f, 0.0f  , 1.0f
+    };
+
+    cameraToWorld *= transpose(make_mat4(values));
+}
+
+void rotateZ(mat4x4& cameraToWorld, float Z)
+{
+    float values[16] = {
+     cos(Z), -sin(Z), 0.0f, 0.0f,
+     sin(Z), cos(Z) , 0.0f, 0.0f,
+     0.0f  , 0.0f   , 1.0f, 0.0f,
+     0.0f  , 0.0f   , 0.0f, 1.0f
+    };
+
+    cameraToWorld *= transpose(make_mat4(values));
+}
+
+void translate(mat4x4& cameraToWorld, const vec3& translation)
+{
+    cameraToWorld[3][0] += translation[0];
+    cameraToWorld[3][1] += translation[1];
+    cameraToWorld[3][2] += translation[2];
 }
