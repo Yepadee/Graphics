@@ -130,3 +130,17 @@ void translate(mat4x4& cameraToWorld, const vec3& translation)
     cameraToWorld[3][1] += translation[1];
     cameraToWorld[3][2] += translation[2];
 }
+
+mat3x3 getCameraRotation(const mat4x4& cameraToWorld)
+{
+    return mat3x3(cameraToWorld);
+}
+
+vec3 getCameraPosition(const mat4x4& cameraToWorld)
+{
+    float x = cameraToWorld[3][0];
+    float y = cameraToWorld[3][1];
+    float z = cameraToWorld[3][2];
+
+    return vec3(x, y, z);
+}

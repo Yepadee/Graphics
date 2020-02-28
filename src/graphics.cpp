@@ -11,14 +11,15 @@
 #include "Object.h"
 #include "Camera.h"
 #include "Rasterise.h"
+#include "RayTrace.h"
 
 #include "KeyInput.h"
 
 using namespace std;
 using namespace glm;
 
-#define WIDTH 720
-#define HEIGHT 720
+#define WIDTH 480
+#define HEIGHT 360
 
 #define BLACK 0
 
@@ -27,29 +28,26 @@ void draw();
 void update();
 void handleEvent(SDL_Event event);
 
-std::vector<float> interpolate(float from, float to, float numValues);
-
 DrawingWindow window = DrawingWindow(WIDTH, HEIGHT, false);
 
-std::vector<CanvasTriangle> triangles;
-std::vector<CanvasTriangle> drawList;
 
-Image image = loadPPM("textures/texture.ppm");
-
-glm::vec3 cameraPos(0.0f, 0.0f, 8.0f);
-glm::vec3 cameraAngle(0.0f, 0.0f, 0.0f);
-//glm::mat4x4 cameraToWorld = constructCameraSpace(cameraPos, cameraAngle);
-glm::mat4x4 cameraToWorld = lookAt({0, 2, 5}, {0, 0, 0});
 float theta = 0.0f;
 
+glm::vec3 cameraPos(0.0f, 2.4f, 3.8f);
+glm::vec3 cameraAngle(0.0f, 0.0f, 0.0f);
+glm::mat4x4 cameraToWorld = lookAt({0, 2, 5}, {0, 0, 0});
 
 float canvasWidth = WIDTH;
 float canvasHeight = HEIGHT;
 float imageWidth = WIDTH;
 float imageHeight = HEIGHT;
+
 float focalLength = WIDTH / 2;
 
 std::vector<Object> objects = loadOBJ("models/cornell-box.obj", 1.0f);
+
+int drawMode = 0;
+int movementMode = 0;
 
 int main(int argc, char* argv[])
 {
@@ -71,59 +69,75 @@ void draw()
   window.clearPixels();
   clearDepthBuffer();
 
-  glm::mat4x4 worldToCamera = glm::inverse(cameraToWorld);
-
-  for (Object obj : objects)
+  switch (drawMode)
   {
-    for (ModelTriangle m : obj.triangles)
-    {
-      CanvasTriangle t = rasteriseTriangle(m, worldToCamera, focalLength, canvasWidth, canvasHeight, imageWidth, imageHeight);
-      fillTriangle(t, window);
-    }
+    case 0:
+      rasteriseObjectsWireframe(objects, cameraToWorld, focalLength, window);
+      break;
+    case 1:
+      rasteriseObjects(objects, cameraToWorld, focalLength, window);
+      break;
+    case 2:
+      rayTraceObjects(objects, cameraToWorld, focalLength, window);
+      break;
   }
 
-  for (CanvasTriangle t : drawList)
-  {
-    uint32 rgb = packRGB(t.colour.red, t.colour.green, t.colour.blue);
-    drawTriangle(t, rgb, window);
-  }
+
+}
+
+void cameraControls()
+{
+  float vel = 0.01f;
+
+  
+
+  // Position
+  if(keyDown(SDL_SCANCODE_LEFT))  cameraPos.x += -vel;
+  if(keyDown(SDL_SCANCODE_RIGHT)) cameraPos.x +=  vel;
+
+  if(keyDown(SDL_SCANCODE_UP))    cameraPos.z += -vel;
+  if(keyDown(SDL_SCANCODE_DOWN))  cameraPos.z +=  vel;
+
+  if(keyDown(SDL_SCANCODE_Z))     cameraPos.y +=  vel;
+  if(keyDown(SDL_SCANCODE_X))     cameraPos.y += -vel;
+  
+  
+  // Angle
+  if(keyDown(SDL_SCANCODE_W)) cameraAngle.x +=  vel;
+  if(keyDown(SDL_SCANCODE_S)) cameraAngle.x += -vel;
+
+  if(keyDown(SDL_SCANCODE_D)) cameraAngle.y += -vel;
+  if(keyDown(SDL_SCANCODE_A)) cameraAngle.y +=  vel;
+
+  if(keyDown(SDL_SCANCODE_Q)) cameraAngle.z += -vel;
+  if(keyDown(SDL_SCANCODE_E)) cameraAngle.z +=  vel;
+
+  if(keyDown(SDL_SCANCODE_U)) focalLength +=  10;
+  if(keyDown(SDL_SCANCODE_I)) focalLength += -10;
+
+  
+
+  cameraToWorld = constructCameraSpace(cameraPos, cameraAngle);
+
 }
 
 void update()
 {
-  float vel = 0.02f;
-  glm::vec3 translation = {0, 0, 0};
-  // Function for performing animation (shifting artifacts or moving the camera)
   updateKeyboard();
 
-  cameraToWorld = rotateAbout({0, 0, 0}, 3, 10, theta);
-  theta += 0.03f;
+  switch (movementMode)
+  {
+    case 0: // Orbit Mode
+      cameraToWorld = rotateAbout({0, 0, 0}, 3, 10, theta);
+      theta += 0.03f;
+      break;
+    case 1: // Input Mode
+      cameraControls();
+      break;
+  }
 
-  if(keyDown(SDL_SCANCODE_LEFT)) translation.x -= vel;
-  if(keyDown(SDL_SCANCODE_RIGHT)) translation.x += vel;
-
-  if(keyDown(SDL_SCANCODE_UP)) translation.z += vel;
-  if(keyDown(SDL_SCANCODE_DOWN)) translation.z -= vel;
-
-  if(keyDown(SDL_SCANCODE_Z)) translation.y -= vel;
-  if(keyDown(SDL_SCANCODE_X)) translation.y += vel;
-  
-  
-  // Angle
-  if(keyDown(SDL_SCANCODE_W)) rotateX(cameraToWorld, -vel);
-  if(keyDown(SDL_SCANCODE_S)) rotateX(cameraToWorld, vel);
-
-  if(keyDown(SDL_SCANCODE_D)) rotateY(cameraToWorld, vel);
-  if(keyDown(SDL_SCANCODE_A)) rotateY(cameraToWorld, -vel);
-
-  if(keyDown(SDL_SCANCODE_Q)) rotateZ(cameraToWorld, vel);
-  if(keyDown(SDL_SCANCODE_E)) rotateZ(cameraToWorld, -vel);
-
-  if(keyDown(SDL_SCANCODE_U)) focalLength += 10;
-  if(keyDown(SDL_SCANCODE_I)) focalLength -= 10;
-
-  translate(cameraToWorld, translation);
-
+  if(keyPressed(SDL_SCANCODE_RETURN)) drawMode = (drawMode + 1) % 3;
+  if(keyPressed(SDL_SCANCODE_C)) movementMode = (movementMode + 1) % 2;
 
 }
 

@@ -4,6 +4,9 @@
 #include <ModelTriangle.h>
 #include <CanvasTriangle.h>
 
+#include "Drawing3D.h"
+#include "Camera.h"
+
 using namespace glm;
 
 /**
@@ -69,4 +72,31 @@ CanvasTriangle rasteriseTriangle(const ModelTriangle& modelTriangle, const mat4x
     }
 
     return canvasTriangle;
+}
+
+void rasteriseObjects(const std::vector<Object>& objects, const mat4x4& cameraToWorld, float focalLength, DrawingWindow& window)
+{
+    mat4x4 worldToCamera = inverse(cameraToWorld);
+    for (Object obj : objects)
+    {
+        for (ModelTriangle m : obj.triangles)
+        {
+          CanvasTriangle t = rasteriseTriangle(m, worldToCamera, focalLength, window.width, window.height, window.width, window.height);
+          fillTriangle(t, window);
+        }
+    }
+}
+
+void rasteriseObjectsWireframe(const std::vector<Object>& objects, const mat4x4& cameraToWorld, float focalLength, DrawingWindow& window)
+{
+    mat4x4 worldToCamera = inverse(cameraToWorld);
+    for (Object obj : objects)
+    {
+        for (ModelTriangle m : obj.triangles)
+        {
+          CanvasTriangle t = rasteriseTriangle(m, worldToCamera, focalLength, window.width, window.height, window.width, window.height);
+          uint32_t colour = packRGB(t.colour);
+          drawTriangle(t, colour, window);
+        }
+    }
 }

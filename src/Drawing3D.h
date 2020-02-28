@@ -38,27 +38,51 @@ void initDepthBuffer(int width, int height)
  */
 void drawLine(const CanvasPoint& from, const CanvasPoint& to, uint32_t colour, DrawingWindow& window)
 {
-  if (from.depth < 0 || to.depth < 0) return;
   float xDiff = to.x - from.x;
   float yDiff = to.y - from.y;
-  float depthDiff = to.depth - from.depth;
 
   float numberOfSteps = std::max(abs(xDiff), std::abs(yDiff));
   float xStepSize = xDiff/numberOfSteps;
   float yStepSize = yDiff/numberOfSteps;
-  float depthStepSize = depthDiff/numberOfSteps;
 
-  for (float i=0.0; i<numberOfSteps; i++) {
+  for (float i=0.0; i<numberOfSteps; i++)
+  {
     float x = from.x + (xStepSize*i);
     float y = from.y + (yStepSize*i);
-    float depth = from.depth + (depthStepSize*i);
+    window.setPixelColour(floor(x), floor(y), colour);
+  }
+}
 
+void rasterLine(const CanvasPoint& from, const CanvasPoint& to, uint32_t colour, DrawingWindow& window)
+{
+  float xDiff = to.x - from.x;
+  float depthDiff = to.depth - from.depth;
+
+  float numberOfSteps = abs(xDiff);
+  float xStepSize = xDiff/numberOfSteps;
+  float depthStepSize = depthDiff/numberOfSteps;
+  
+  float y = from.y;
+  for (float i=0.0f; i<numberOfSteps; i++)
+  {
+    float x = from.x + (xStepSize*i);
+    
+    float depth = from.depth + (depthStepSize*i);
     if (depth > depthBuffer[(int)(floor(x) + dbWidth * floor(y))])
     {
       depthBuffer[(int)(floor(x) + dbWidth * floor(y))] = depth;
       window.setPixelColour(floor(x), floor(y), colour);
     }
   }
+}
+
+void fitToWindow(CanvasPoint& point, const DrawingWindow& window)
+{
+  if (point.x >= window.width) point.x = window.width - 1;
+  if (point.y >= window.height) point.y = window.height - 1;
+
+  if (point.x < 0) point.x = 0;
+  if (point.y < 0) point.y = 0;
 }
 
 /**
@@ -73,7 +97,11 @@ void drawTriangle(const CanvasTriangle& triangle, uint32_t colour, DrawingWindow
   int j = 2;
   for (int i = 0; i < 3; ++i)
   {
-    drawLine(triangle.vertices[i], triangle.vertices[j], colour, window);
+    CanvasPoint p1 = triangle.vertices[i];
+    CanvasPoint p2 = triangle.vertices[j];
+    fitToWindow(p1, window);
+    fitToWindow(p2, window);
+    drawLine(p1, p2, colour, window);
     j = i;
   }
 }
@@ -90,15 +118,6 @@ void sortVertices(CanvasTriangle& triangle)
        if (triangle.vertices[1].y < triangle.vertices[0].y) 
           std::swap(triangle.vertices[1], triangle.vertices[0]); 
     }
-}
-
-void fitToWindow(CanvasPoint& point, const DrawingWindow& window)
-{
-  if (point.x > window.width) point.x = window.width - 2;
-  if (point.y > window.height) point.y = window.height - 2;
-
-  if (point.x < 0) point.x = 0;
-  if (point.y < 0) point.y = 0;
 }
 
 /**
@@ -152,13 +171,11 @@ void fillTriangle(CanvasTriangle& triangle, DrawingWindow& window)
     float z1 = zPointsLHS1[(int) (y - yStart)];
     float z2 = zPointsRHS[(int) (y - yStart)];
 
-    CanvasPoint p1 = {x1, y, z1};
-    CanvasPoint p2 = {x2, y, z2};
-
+    CanvasPoint p1(x1, y, z1);
+    CanvasPoint p2(x2, y, z2);
     fitToWindow(p1, window);
     fitToWindow(p2, window);
-
-    drawLine(p1, p2, colour, window);
+    rasterLine(p1, p2, colour, window);
   }
 
   //Fill bottom triangle.
@@ -170,12 +187,10 @@ void fillTriangle(CanvasTriangle& triangle, DrawingWindow& window)
     float z1 = zPointsLHS2[(int) (y - yMid)];
     float z2 = zPointsRHS[(int) (y - yStart)];
 
-    CanvasPoint p1 = {x1, y, z1};
-    CanvasPoint p2 = {x2, y, z2};
-
+    CanvasPoint p1(x1, y, z1);
+    CanvasPoint p2(x2, y, z2);
     fitToWindow(p1, window);
     fitToWindow(p2, window);
-
-    drawLine(p1, p2, colour, window);
+    rasterLine(p1, p2, colour, window);
   }
 }
