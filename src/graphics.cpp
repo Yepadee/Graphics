@@ -136,7 +136,8 @@ void update()
       break;
   }
 
-  if(keyPressed(SDL_SCANCODE_RETURN)) drawMode = (drawMode + 1) % 3;
+  if(keyPressed(SDL_SCANCODE_P)) drawMode = (drawMode + 1) % 3;
+  if(keyPressed(SDL_SCANCODE_O)) drawMode = drawMode > 0 ? drawMode - 1 : 0;
   if(keyPressed(SDL_SCANCODE_C)) movementMode = (movementMode + 1) % 2;
 
 }
