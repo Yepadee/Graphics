@@ -15,6 +15,15 @@
 
 using namespace glm;
 
+/**
+ * Get closest ray-triangle intersection.
+ *
+ * @param cameraPosition Position of camera.
+ * @param rayDirection Direction of ray from camera.
+ * @param objects List of objects in the world that the ray may intersect.
+ * @param result The resultant ray-triangle intersection (if found).
+ * @return found Wether or not an intersection was found.
+ */
 bool getClosestIntersection(const vec3& cameraPosition, const vec3& rayDirection,
                             const std::vector<Object>& objects,
                             RayTriangleIntersection& result)
@@ -60,7 +69,14 @@ std::ostream& operator<<(std::ostream& os, const glm::mat3x3& mat)
     return os;
 }
 
-
+/**
+ * Render objects in scene to window via ray-tracing.
+ *
+ * @param objects List of objects to render.
+ * @param cameraToWorld Homogenious cameraToWorld matrix.
+ * @param focalLength The focal length of the camera.
+ * @param window The window to draw ray-traced objects on.
+ */
 void rayTraceObjects(const std::vector<Object>& objects, const mat4x4& cameraToWorld, float focalLength, DrawingWindow& window)
 {
     mat3x3 cameraSpace = getCameraRotation(cameraToWorld);

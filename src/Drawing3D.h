@@ -34,7 +34,7 @@ void initDepthBuffer(int width, int height)
  * @param from The first point of the line.
  * @param to The second point of the line.
  * @param colour A bitpacked RGB colour of the line.
- * @param window The window the image is to be drawn onto.
+ * @param window The window the line is to be drawn onto.
  */
 void drawLine(const CanvasPoint& from, const CanvasPoint& to, uint32_t colour, DrawingWindow& window)
 {
@@ -53,6 +53,14 @@ void drawLine(const CanvasPoint& from, const CanvasPoint& to, uint32_t colour, D
   }
 }
 
+/**
+ * Draws a line on a window between two canvas points at same y value.
+ *
+ * @param from The first point of the line.
+ * @param to The second point of the line.
+ * @param colour A bitpacked RGB colour of the line.
+ * @param window The window the line is to be drawn onto.
+ */
 void rasterLine(const CanvasPoint& from, const CanvasPoint& to, uint32_t colour, DrawingWindow& window)
 {
   float xDiff = to.x - from.x;
@@ -75,6 +83,7 @@ void rasterLine(const CanvasPoint& from, const CanvasPoint& to, uint32_t colour,
     }
   }
 }
+
 
 void fitToWindow(CanvasPoint& point, const DrawingWindow& window)
 {

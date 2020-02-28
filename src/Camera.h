@@ -49,11 +49,11 @@ mat4x4 rotateAbout(const vec3& centre, float elevation, float radius, float angl
 }
 
 /**
- * Construct homogenious world-to-camera matrix.
+ * Construct homogenious camera-to-world matrix.
  *
  * @param pos A 3D position vector of camera.
  * @param angle A 3D angle vector of camera.
- * @return 4x4 homogenious matrix that maps vertices in world space to vertices on camera space.
+ * @return 4x4 homogenious matrix that maps vertices in camera space to vertices on world space.
  */
 mat4x4 constructCameraSpace(const vec3& pos, const vec3& angle)
 {
@@ -72,6 +72,12 @@ mat4x4 constructCameraSpace(const vec3& pos, const vec3& angle)
     return transpose(make_mat4(values));
 }
 
+/**
+ * Construct camera-to-world matrix.
+ *
+ * @param angle A 3D angle vector of camera.
+ * @return 3x3 homogenious matrix that maps vertices in camera space to vertices on world space.
+ */
 mat3x3 constructCameraSpace(const vec3& angle)
 {
     // Alias angle components.
@@ -88,6 +94,12 @@ mat3x3 constructCameraSpace(const vec3& angle)
     return transpose(make_mat3(values));
 }
 
+/**
+ * Rotate homogenious camera-to-world matrix about X axis.
+ *
+ * @param cameraToWorld Camera matrix to be rotated.
+ * @param X the angle in radians to rotate about the X axis.
+ */
 void rotateX(mat4x4& cameraToWorld, float X)
 {
     float values[16] = {
@@ -100,6 +112,12 @@ void rotateX(mat4x4& cameraToWorld, float X)
     cameraToWorld *= transpose(make_mat4(values));
 }
 
+/**
+ * Rotate homogenious camera-to-world matrix about Y axis.
+ *
+ * @param cameraToWorld Camera matrix to be rotated.
+ * @param X the angle in radians to rotate about the Y axis.
+ */
 void rotateY(mat4x4& cameraToWorld, float Y)
 {
     float values[16] = {
@@ -112,6 +130,12 @@ void rotateY(mat4x4& cameraToWorld, float Y)
     cameraToWorld *= transpose(make_mat4(values));
 }
 
+/**
+ * Rotate homogenious camera-to-world matrix about Z axis.
+ *
+ * @param cameraToWorld Camera matrix to be rotated.
+ * @param X the angle in radians to rotate about the Z axis.
+ */
 void rotateZ(mat4x4& cameraToWorld, float Z)
 {
     float values[16] = {
@@ -124,6 +148,12 @@ void rotateZ(mat4x4& cameraToWorld, float Z)
     cameraToWorld *= transpose(make_mat4(values));
 }
 
+/**
+ * Translate homogenious camera-to-world matrix.
+ *
+ * @param cameraToWorld Camera matrix to be translated.
+ * @param translation The vector to move camera position by.
+ */
 void translate(mat4x4& cameraToWorld, const vec3& translation)
 {
     cameraToWorld[3][0] += translation[0];
@@ -131,11 +161,23 @@ void translate(mat4x4& cameraToWorld, const vec3& translation)
     cameraToWorld[3][2] += translation[2];
 }
 
+/**
+ * Exctract rotation matrix from 4x4 homogenious camera-to-world matrix.
+ *
+ * @param cameraToWorld Homogenious camera matrix.
+ * @return cameraToWorld 3x3 rotation matrix.
+ */
 mat3x3 getCameraRotation(const mat4x4& cameraToWorld)
 {
     return mat3x3(cameraToWorld);
 }
 
+/**
+ * Exctract position matrix from 4x4 homogenious camera-to-world matrix.
+ *
+ * @param cameraToWorld Homogenious camera matrix.
+ * @return cameraToWorld 3x3 position vector.
+ */
 vec3 getCameraPosition(const mat4x4& cameraToWorld)
 {
     float x = cameraToWorld[3][0];
