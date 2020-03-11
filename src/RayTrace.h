@@ -52,7 +52,7 @@ bool getClosestIntersection(const vec3& cameraPosition, const vec3& rayDirection
                 t < minPointDistance)
             {
                 minPointDistance = t;
-                result.intersectionPoint = u * e0 + v * e1;
+                result.intersectionPoint = triangle.vertices[0] + u * e0 + v * e1;
                 result.distanceFromCamera = minPointDistance;
                 result.intersectedTriangle = triangle;
                 found = true;
@@ -76,8 +76,17 @@ float applyProximityLight(RayTriangleIntersection rti, vec3 lightSource)
 {   
     glm::vec3 diff = rti.intersectionPoint - lightSource;
     float distSqr = dot(diff, diff);
-    float strength = 200.0f;
+    float strength = 100.0f;
     return ((strength * 1.0f)/(4.0f * distSqr * M_PI));
+}
+
+float applyAOILight(RayTriangleIntersection rti, vec3 lightSource)
+{
+    vec3 vs[3] = rti.intersectedTriangle.vertices;
+    vec3 normal = glm::cross(vs[1] - vs[0], vs[2] - vs[0]);
+
+    float aoiLight = dot(normal, lightSource);
+    return aoiLight > 0.0f ? aoiLight : 0.0f;
 }
 
 uint32_t applyBrightness(Colour colour, float brightness)
@@ -105,8 +114,10 @@ void rayTraceObjects(const std::vector<Object>& objects, const mat4x4& cameraToW
 
     mat3x3 cameraSpace = getCameraRotation(cameraToWorld);
     vec3 cameraPos = getCameraPosition(cameraToWorld);
+
     std::cout << cameraPos << std::endl;
     std::cout << cameraSpace << std::endl;
+    
     vec3 rayWorldSpace;
     vec3 rayCameraSpace;
     RayTriangleIntersection rti;
@@ -122,9 +133,11 @@ void rayTraceObjects(const std::vector<Object>& objects, const mat4x4& cameraToW
 
             if (getClosestIntersection(cameraPos, rayWorldSpace, objects, rti))
             {
-                float brightness = 0.2f;
+                float brightness = 1.0ff;
                 brightness += applyProximityLight(rti, lightSource);
+                brightness *= applyAOILight(rti, lightSource);
                 if (brightness > 1.0f) brightness = 1.0f;
+                if (brightness < 0.2f) brightness = 0.2f;
 
                 uint32_t colour = applyBrightness(rti.intersectedTriangle.colour, brightness);
 
