@@ -82,12 +82,12 @@ float applyProximityLight(RayTriangleIntersection rti, vec4 lightSource)
 
 float applyAOILight(RayTriangleIntersection rti, vec4 lightSource)
 {
-    vec3 vs[3] = rti.intersectedTriangle.vertices;
-    vec3 normal = glm::cross(vs[1] - vs[0], vs[2] - vs[0]);
+    //vec3 vs[3] = rti.intersectedTriangle.vertices;
+    vec3 normal = glm::cross(rti.intersectedTriangle.vertices[1] - rti.intersectedTriangle.vertices[0], rti.intersectedTriangle.vertices[2] - rti.intersectedTriangle.vertices[0]);
     
     vec3 ray = vec3(lightSource) - rti.intersectionPoint;
 
-    float aoiLight = dot(normal, ray);
+    float aoiLight = dot(normalize(normal), normalize(ray));
     return aoiLight > 0.0f ? aoiLight : 0.0f;
 }
 
@@ -110,8 +110,8 @@ uint32_t applyBrightness(Colour colour, float brightness)
  */
 void rayTraceObjects(const std::vector<Object>& objects, const mat4x4& cameraToWorld, float focalLength, DrawingWindow& window)
 {
-    vec3 a (-0.884011, 5.218497, -3.567968);
-    vec3 b (0.415989, 5.219334, -2.517968);
+    vec3 a (-0.884011, 4.718497, -3.567968);
+    vec3 b (0.415989, 4.719334, -2.517968);
     vec3 light = a + ((glm::length(a - b) / 3) * -(a - b));
     vec4 lightSource(light, 100.0f);
 
@@ -136,11 +136,9 @@ void rayTraceObjects(const std::vector<Object>& objects, const mat4x4& cameraToW
 
             if (getClosestIntersection(cameraPos, rayWorldSpace, objects, rti))
             {
-                float brightness = 1.0f;
-                //brightness *= 0.9f * applyProximityLight(rti, lightSource);
+                float brightness = 0.2f;
+                brightness += applyProximityLight(rti, lightSource);
                 brightness *= applyAOILight(rti, lightSource);
-
-                if (brightness > 1.0f) std::cout << "b: " << brightness << std::endl;
 
                 if (brightness > 1.0f) brightness = 1.0f;
                 if (brightness < 0.2f) brightness = 0.2f;
