@@ -2,20 +2,28 @@
 
 #include <math.h>
 #include <glm/glm.hpp>
+
 #include <ModelTriangle.h>
 #include <CanvasTriangle.h>
 #include <DrawingWindow.h>
-
 #include <RayTriangleIntersection.h>
 
 #include <vector>
 
-#include "PixelUtil.h"
 #include "Object.h"
 #include "Camera.h"
+#include "Light.h"
 
 
 using namespace glm;
+
+std::ostream& operator<<(std::ostream& os, const glm::mat3x3& mat)
+{
+    os << "|" << mat[0][0] << " " << mat[0][1] << " " << mat[0][2] << "|" << std::endl;
+    os << "|" << mat[1][0] << " " << mat[1][1] << " " << mat[1][2] << "|" << std::endl;
+    os << "|" << mat[2][0] << " " << mat[2][1] << " " << mat[2][2] << "|" << std::endl;
+    return os;
+}
 
 /**
  * Get closest ray-triangle intersection.
@@ -63,62 +71,6 @@ bool getClosestIntersection(const vec3& cameraPosition, const vec3& rayDirection
     return found;
 }
 
-std::ostream& operator<<(std::ostream& os, const glm::mat3x3& mat)
-{
-    os << "|" << mat[0][0] << " " << mat[0][1] << " " << mat[0][2] << "|" << std::endl;
-    os << "|" << mat[1][0] << " " << mat[1][1] << " " << mat[1][2] << "|" << std::endl;
-    os << "|" << mat[2][0] << " " << mat[2][1] << " " << mat[2][2] << "|" << std::endl;
-    return os;
-}
-
-/**
- * Calculate proximity light coefficient.
- *
- * @param rti Ray-triangle intersection.
- * @param lightSource The location and brightness of the light.
- * @return Brightness of point.
- */
-float applyProximityLight(RayTriangleIntersection rti, vec4 lightSource)
-{   
-    glm::vec3 diff = rti.intersectionPoint - vec3(lightSource);
-    float distSqr = dot(diff, diff);
-    float strength = lightSource.w;
-    return ((strength * 1.0f)/(4.0f * distSqr * M_PI));
-}
-
-/**
- * Calculate angle of incidence light coefficient.
- *
- * @param rti Ray-triangle intersection.
- * @param lightSource The location and brightness of the light.
- * @return Brightness of point.
- */
-float applyAOILight(RayTriangleIntersection rti, vec4 lightSource)
-{
-    vec3 normal = glm::cross(rti.intersectedTriangle.vertices[1] - rti.intersectedTriangle.vertices[0], 
-                             rti.intersectedTriangle.vertices[2] - rti.intersectedTriangle.vertices[0]);
-    
-    vec3 ray = vec3(lightSource) - rti.intersectionPoint;
-
-    float aoiLight = dot(normalize(normal), normalize(ray));
-    return aoiLight > 0.0f ? aoiLight : 0.0f;
-}
-
-/**
- * Apply brightness to a point.
- *
- * @param colour The colour of the point.
- * @param brightness The brightness of the point.
- * @return Colour of points under light.
- */
-uint32_t applyBrightness(Colour colour, float brightness)
-{
-    float r = colour.red * brightness;
-    float g = colour.green * brightness;
-    float b = colour.blue * brightness;
-    return packRGB(r,g,b);
-}
-
 
 /**
  * Render objects in scene to window via ray-tracing.
@@ -151,18 +103,8 @@ void rayTraceObjects(const std::vector<Object>& objects, const std::vector<vec4>
 
             if (getClosestIntersection(cameraPos, rayWorldSpace, objects, rti))
             {
-                float brightness = 0.2f;
-                for (vec4 lightSource : lights){
-                    brightness += applyProximityLight(rti, lightSource) * applyAOILight(rti, lightSource);
-
-                    if (brightness > 1.0f) brightness = 1.0f;
-                    if (brightness < 0.2f) brightness = 0.2f;
-
-                    uint32_t colour = applyBrightness(rti.intersectedTriangle.colour, brightness);
-
-                    window.setPixelColour(i, j, colour);
-                }
-                
+                uint32_t colour = illuminatePoint(rti, lights);
+                window.setPixelColour(i, j, colour);
             }
             else
             {
@@ -171,3 +113,4 @@ void rayTraceObjects(const std::vector<Object>& objects, const std::vector<vec4>
         }
     }
 }
+

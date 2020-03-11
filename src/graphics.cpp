@@ -53,12 +53,12 @@ vec3 light = a + ((glm::length(a - b) / 3) * -(a - b));
 vec4 lightSource(light, 100.0f);
 
 std::vector<vec4> lights = {
-  lightSource,
-  {0.0f, 2.4f, 3.8f, 100.0f}
+  lightSource
+  //, {0.0f, 2.4f, 3.8f, 100.0f}
 }; 
 
-int drawMode = 0;
-int movementMode = 0;
+int drawMode = 2;
+int movementMode = 1;
 
 
 int main(int argc, char* argv[])
