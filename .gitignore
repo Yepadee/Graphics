@@ -1,4 +1,4 @@
-libs/
+libs/glm
 .vscode/
 
 graphics.o
