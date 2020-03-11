@@ -72,20 +72,22 @@ std::ostream& operator<<(std::ostream& os, const glm::mat3x3& mat)
 }
 
 
-float applyProximityLight(RayTriangleIntersection rti, vec3 lightSource)
+float applyProximityLight(RayTriangleIntersection rti, vec4 lightSource)
 {   
-    glm::vec3 diff = rti.intersectionPoint - lightSource;
+    glm::vec3 diff = rti.intersectionPoint - vec3(lightSource);
     float distSqr = dot(diff, diff);
-    float strength = 100.0f;
+    float strength = lightSource.w;
     return ((strength * 1.0f)/(4.0f * distSqr * M_PI));
 }
 
-float applyAOILight(RayTriangleIntersection rti, vec3 lightSource)
+float applyAOILight(RayTriangleIntersection rti, vec4 lightSource)
 {
     vec3 vs[3] = rti.intersectedTriangle.vertices;
     vec3 normal = glm::cross(vs[1] - vs[0], vs[2] - vs[0]);
+    
+    vec3 ray = vec3(lightSource) - rti.intersectionPoint;
 
-    float aoiLight = dot(normal, lightSource);
+    float aoiLight = dot(normal, ray);
     return aoiLight > 0.0f ? aoiLight : 0.0f;
 }
 
@@ -110,7 +112,8 @@ void rayTraceObjects(const std::vector<Object>& objects, const mat4x4& cameraToW
 {
     vec3 a (-0.884011, 5.218497, -3.567968);
     vec3 b (0.415989, 5.219334, -2.517968);
-    vec3 lightSource = a + ((glm::length(a - b) / 3) * -(a - b));
+    vec3 light = a + ((glm::length(a - b) / 3) * -(a - b));
+    vec4 lightSource(light, 100.0f);
 
     mat3x3 cameraSpace = getCameraRotation(cameraToWorld);
     vec3 cameraPos = getCameraPosition(cameraToWorld);
@@ -133,9 +136,12 @@ void rayTraceObjects(const std::vector<Object>& objects, const mat4x4& cameraToW
 
             if (getClosestIntersection(cameraPos, rayWorldSpace, objects, rti))
             {
-                float brightness = 1.0ff;
-                brightness += applyProximityLight(rti, lightSource);
+                float brightness = 1.0f;
+                //brightness *= 0.9f * applyProximityLight(rti, lightSource);
                 brightness *= applyAOILight(rti, lightSource);
+
+                if (brightness > 1.0f) std::cout << "b: " << brightness << std::endl;
+
                 if (brightness > 1.0f) brightness = 1.0f;
                 if (brightness < 0.2f) brightness = 0.2f;
 
