@@ -71,7 +71,13 @@ std::ostream& operator<<(std::ostream& os, const glm::mat3x3& mat)
     return os;
 }
 
-
+/**
+ * Calculate proximity light coefficient.
+ *
+ * @param rti Ray-triangle intersection.
+ * @param lightSource The location and brightness of the light.
+ * @return Brightness of point.
+ */
 float applyProximityLight(RayTriangleIntersection rti, vec4 lightSource)
 {   
     glm::vec3 diff = rti.intersectionPoint - vec3(lightSource);
@@ -80,10 +86,17 @@ float applyProximityLight(RayTriangleIntersection rti, vec4 lightSource)
     return ((strength * 1.0f)/(4.0f * distSqr * M_PI));
 }
 
+/**
+ * Calculate angle of incidence light coefficient.
+ *
+ * @param rti Ray-triangle intersection.
+ * @param lightSource The location and brightness of the light.
+ * @return Brightness of point.
+ */
 float applyAOILight(RayTriangleIntersection rti, vec4 lightSource)
 {
-    //vec3 vs[3] = rti.intersectedTriangle.vertices;
-    vec3 normal = glm::cross(rti.intersectedTriangle.vertices[1] - rti.intersectedTriangle.vertices[0], rti.intersectedTriangle.vertices[2] - rti.intersectedTriangle.vertices[0]);
+    vec3 normal = glm::cross(rti.intersectedTriangle.vertices[1] - rti.intersectedTriangle.vertices[0], 
+                             rti.intersectedTriangle.vertices[2] - rti.intersectedTriangle.vertices[0]);
     
     vec3 ray = vec3(lightSource) - rti.intersectionPoint;
 
@@ -91,6 +104,13 @@ float applyAOILight(RayTriangleIntersection rti, vec4 lightSource)
     return aoiLight > 0.0f ? aoiLight : 0.0f;
 }
 
+/**
+ * Apply brightness to a point.
+ *
+ * @param colour The colour of the point.
+ * @param brightness The brightness of the point.
+ * @return Colour of points under light.
+ */
 uint32_t applyBrightness(Colour colour, float brightness)
 {
     float r = colour.red * brightness;
