@@ -46,10 +46,20 @@ float focalLength = WIDTH / 2;
 
 std::vector<Object> objects = loadOBJ("models/cornell-box.obj", 1.0f);
 
+vec3 a (-0.884011, 4.718497, -3.567968);
+vec3 b (0.415989, 4.719334, -2.517968);
+vec3 light = a + ((glm::length(a - b) / 3) * -(a - b));
+
+vec4 lightSource(light, 100.0f);
+
+std::vector<vec4> lights = {
+  lightSource,
+  {0.0f, 2.4f, 3.8f, 100.0f}
+}; 
+
 int drawMode = 0;
 int movementMode = 0;
 
-glm::vec3 lightSource(0.0f, 0.0f, 0.0f);
 
 int main(int argc, char* argv[])
 {
@@ -80,7 +90,7 @@ void draw()
       rasteriseObjects(objects, cameraToWorld, focalLength, window);
       break;
     case 2:
-      rayTraceObjects(objects, cameraToWorld, focalLength, window);
+      rayTraceObjects(objects, lights, cameraToWorld, focalLength, window);
       break;
   }
 

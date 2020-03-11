@@ -108,13 +108,8 @@ uint32_t applyBrightness(Colour colour, float brightness)
  * @param focalLength The focal length of the camera.
  * @param window The window to draw ray-traced objects on.
  */
-void rayTraceObjects(const std::vector<Object>& objects, const mat4x4& cameraToWorld, float focalLength, DrawingWindow& window)
+void rayTraceObjects(const std::vector<Object>& objects, const std::vector<vec4>& lights, const mat4x4& cameraToWorld, float focalLength, DrawingWindow& window)
 {
-    vec3 a (-0.884011, 4.718497, -3.567968);
-    vec3 b (0.415989, 4.719334, -2.517968);
-    vec3 light = a + ((glm::length(a - b) / 3) * -(a - b));
-    vec4 lightSource(light, 100.0f);
-
     mat3x3 cameraSpace = getCameraRotation(cameraToWorld);
     vec3 cameraPos = getCameraPosition(cameraToWorld);
 
@@ -137,15 +132,17 @@ void rayTraceObjects(const std::vector<Object>& objects, const mat4x4& cameraToW
             if (getClosestIntersection(cameraPos, rayWorldSpace, objects, rti))
             {
                 float brightness = 0.2f;
-                brightness += applyProximityLight(rti, lightSource);
-                brightness *= applyAOILight(rti, lightSource);
+                for (vec4 lightSource : lights){
+                    brightness += applyProximityLight(rti, lightSource) * applyAOILight(rti, lightSource);
 
-                if (brightness > 1.0f) brightness = 1.0f;
-                if (brightness < 0.2f) brightness = 0.2f;
+                    if (brightness > 1.0f) brightness = 1.0f;
+                    if (brightness < 0.2f) brightness = 0.2f;
 
-                uint32_t colour = applyBrightness(rti.intersectedTriangle.colour, brightness);
+                    uint32_t colour = applyBrightness(rti.intersectedTriangle.colour, brightness);
 
-                window.setPixelColour(i, j, colour);
+                    window.setPixelColour(i, j, colour);
+                }
+                
             }
             else
             {
