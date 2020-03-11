@@ -49,6 +49,8 @@ std::vector<Object> objects = loadOBJ("models/cornell-box.obj", 1.0f);
 int drawMode = 0;
 int movementMode = 0;
 
+glm::vec3 lightSource(0.0f, 0.0f, 0.0f);
+
 int main(int argc, char* argv[])
 {
   SDL_Event event;

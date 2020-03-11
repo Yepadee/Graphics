@@ -1,5 +1,6 @@
 #pragma once
 
+#include <math.h>
 #include <glm/glm.hpp>
 #include <ModelTriangle.h>
 #include <CanvasTriangle.h>
@@ -12,6 +13,7 @@
 #include "PixelUtil.h"
 #include "Object.h"
 #include "Camera.h"
+
 
 using namespace glm;
 
@@ -69,6 +71,24 @@ std::ostream& operator<<(std::ostream& os, const glm::mat3x3& mat)
     return os;
 }
 
+
+float applyProximityLight(RayTriangleIntersection rti, vec3 lightSource)
+{   
+    glm::vec3 diff = rti.intersectionPoint - lightSource;
+    float distSqr = dot(diff, diff);
+    float strength = 200.0f;
+    return ((strength * 1.0f)/(4.0f * distSqr * M_PI));
+}
+
+uint32_t applyBrightness(Colour colour, float brightness)
+{
+    float r = colour.red * brightness;
+    float g = colour.green * brightness;
+    float b = colour.blue * brightness;
+    return packRGB(r,g,b);
+}
+
+
 /**
  * Render objects in scene to window via ray-tracing.
  *
@@ -79,6 +99,10 @@ std::ostream& operator<<(std::ostream& os, const glm::mat3x3& mat)
  */
 void rayTraceObjects(const std::vector<Object>& objects, const mat4x4& cameraToWorld, float focalLength, DrawingWindow& window)
 {
+    vec3 a (-0.884011, 5.218497, -3.567968);
+    vec3 b (0.415989, 5.219334, -2.517968);
+    vec3 lightSource = a + ((glm::length(a - b) / 3) * -(a - b));
+
     mat3x3 cameraSpace = getCameraRotation(cameraToWorld);
     vec3 cameraPos = getCameraPosition(cameraToWorld);
     std::cout << cameraPos << std::endl;
@@ -98,7 +122,12 @@ void rayTraceObjects(const std::vector<Object>& objects, const mat4x4& cameraToW
 
             if (getClosestIntersection(cameraPos, rayWorldSpace, objects, rti))
             {
-                uint32_t colour = packRGB(rti.intersectedTriangle.colour);
+                float brightness = 0.2f;
+                brightness += applyProximityLight(rti, lightSource);
+                if (brightness > 1.0f) brightness = 1.0f;
+
+                uint32_t colour = applyBrightness(rti.intersectedTriangle.colour, brightness);
+
                 window.setPixelColour(i, j, colour);
             }
             else
