@@ -48,7 +48,7 @@ std::vector<Object> objects = loadOBJ("models/cornell-box.obj", 1.0f);
 
 std::vector<vec4> lights = {
     {-0.159877f, 4.71896f, -2.98309f, 150.0f}
-  //, {0.0f, 2.4f, 3.8f, 100.0f}
+  , {0.0f, 2.4f, 3.8f, 100.0f}
 }; 
 
 int drawMode = 2;

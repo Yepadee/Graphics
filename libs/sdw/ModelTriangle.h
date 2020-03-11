@@ -21,6 +21,16 @@ class ModelTriangle
       vertices[2] = v2;
       colour = trigColour;
     }
+
+    bool operator==(const ModelTriangle& other) const
+    {
+      bool equal = true;
+      equal &= other.vertices[0] == vertices[0];
+      equal &= other.vertices[1] == vertices[1];
+      equal &= other.vertices[2] == vertices[2];
+
+      return equal;
+    }
 };
 
 std::ostream& operator<<(std::ostream& os, const ModelTriangle& triangle)
@@ -31,3 +41,5 @@ std::ostream& operator<<(std::ostream& os, const ModelTriangle& triangle)
     os << std::endl;
     return os;
 }
+
+

@@ -103,7 +103,8 @@ void rayTraceObjects(const std::vector<Object>& objects, const std::vector<vec4>
 
             if (getClosestIntersection(cameraPos, rayWorldSpace, objects, rti))
             {
-                uint32_t colour = illuminatePoint(rti, rayWorldSpace, lights);
+                uint32_t colour = illuminatePoint(rti, rayWorldSpace, objects, lights);
+
                 window.setPixelColour(i, j, colour);
             }
             else
