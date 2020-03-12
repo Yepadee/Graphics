@@ -37,6 +37,7 @@ glm::vec3 cameraPos(0.0f, 2.4f, 3.8f);
 glm::vec3 cameraAngle(0.0f, 0.0f, 0.0f);
 glm::mat4x4 cameraToWorld = lookAt({0, 2, 5}, {0, 0, 0});
 
+
 float canvasWidth = WIDTH;
 float canvasHeight = HEIGHT;
 float imageWidth = WIDTH;
@@ -48,10 +49,10 @@ std::vector<Object> objects = loadOBJ("models/cornell-box.obj", 1.0f);
 
 std::vector<vec4> lights = {
     {-0.159877f, 4.71896f, -2.98309f, 150.0f}
-  , {0.0f, 2.4f, 3.8f, 100.0f}
+  //, {0.0f, 2.4f, 3.8f, 100.0f}
 }; 
 
-int drawMode = 2;
+int drawMode = 0;
 int movementMode = 1;
 
 
@@ -59,12 +60,16 @@ int main(int argc, char* argv[])
 {
   SDL_Event event;
   initDepthBuffer(WIDTH, HEIGHT);
+
+  cameraToWorld = constructCameraSpace(cameraPos, cameraAngle);
+  rayTraceObjects(objects, lights, cameraToWorld, focalLength, window);
+
   while(true)
   {
     // We MUST poll for events - otherwise the window will freeze !
     if(window.pollForInputEvents(&event)) handleEvent(event);
-    update();
-    draw();
+    //update();
+    //draw();
     // Need to render the frame at the end, or nothing actually gets shown on the screen !
     window.renderFrame();
   }

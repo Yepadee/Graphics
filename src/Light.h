@@ -24,7 +24,7 @@ float applyProximityLight(RayTriangleIntersection rti, vec4 lightSource)
     glm::vec3 diff = rti.intersectionPoint - vec3(lightSource);
     float distSqr = dot(diff, diff);
     float strength = lightSource.w;
-    return ((strength * 1.0f)/(4.0f * distSqr * M_PI));
+    return strength / (4.0f * distSqr * M_PI);
 }
 
 /**
@@ -57,9 +57,9 @@ float applyDiffuse(RayTriangleIntersection rti, vec4 lightSource)
     return applyProximityLight(rti, lightSource) * applyAOILight(rti, lightSource);
 }
 
-vec3 reflect(const vec3 &I, const vec3 &N) 
+vec3 reflectRay(const vec3 &ray, const vec3 &normal) 
 { 
-    return I - 2 * dot(I, N) * N; 
+    return ray - 2 * dot(ray, normal) * normal; 
 } 
 
 /**
@@ -75,11 +75,8 @@ float applySpecularLight(RayTriangleIntersection rti, vec4 lightSource, vec3 cam
 
     vec3 normal = cross(rti.intersectedTriangle.vertices[1] - rti.intersectedTriangle.vertices[0], 
                         rti.intersectedTriangle.vertices[2] - rti.intersectedTriangle.vertices[0]);
-
     vec3 lightRay = rti.intersectionPoint - vec3(lightSource);
-
-    vec3 reflected = reflect(lightRay, normal);
-
+    vec3 reflected = reflectRay(lightRay, normal);
     float magnitude = dot(normalize(reflected), -normalize(cameraRay));
 
     return std::pow(std::max(0.0f, magnitude), n);
@@ -112,27 +109,30 @@ uint32_t applyBrightness(Colour colour, float brightness)
     return packRGB(r,g,b);
 }
 
-
-
+/**
+ * Determine if a point is illuminated by a light source.
+ *
+ * @param rti Ray-triangle intersection.
+ * @param lightSource The location and brightness of the light.
+ * @param objects A list of all object that may be between the point and the lightsource.
+ * @return Wether or not a point is illuminated by the lightsource.
+ */
 bool isIlluminated(const RayTriangleIntersection& rti, const vec4& lightSource,
-                            const std::vector<Object>& objects)
+                   const std::vector<Object>& objects)
 {
-    bool visible = true;
-    float minPointDistance = std::numeric_limits<float>::infinity();
+    vec3 shadowRay =  vec3(lightSource) - rti.intersectionPoint;
+    float rayLength = length(shadowRay);
 
-    vec3 shadowRay = vec3(lightSource) - rti.intersectionPoint;
+    float minDistance = 0.4f;
 
     for (Object object : objects)
     {
         for (const ModelTriangle triangle : object.triangles)
         {
-            if (rti.intersectedTriangle == triangle) continue;
-
-
             vec3 e0 = triangle.vertices[1] - triangle.vertices[0];
             vec3 e1 = triangle.vertices[2] - triangle.vertices[0];
             vec3 SPVector = rti.intersectionPoint - triangle.vertices[0];
-            mat3 DEMatrix(-shadowRay, e0, e1);
+            mat3 DEMatrix(-normalize(shadowRay), e0, e1);
             vec3 possibleSolution = glm::inverse(DEMatrix) * SPVector;
 
             float t = possibleSolution.x;
@@ -141,18 +141,17 @@ bool isIlluminated(const RayTriangleIntersection& rti, const vec4& lightSource,
 
             if (u >= 0.0f && u <= 1.0f &&
                 v >= 0.0f && v <= 1.0f &&
-                u + v     <=      1.0f &&
-                t < minPointDistance)
+                u + v     <=      1.0f &&  
+                t         <  rayLength &&
+                t         >  minDistance)
             {
-                minPointDistance = t;
-                visible = false;
+               return false;
             }
         }
     }
 
-    return visible;
+    return true;
 }
-
 
 /**
  * Calculate and apply brightness to a point from all light sources.
@@ -165,13 +164,15 @@ uint32_t illuminatePoint(RayTriangleIntersection rti, vec3 cameraRay, std::vecto
 {
     float ambiance = 0.2f;
     float brightness = 0.0f;
-    for (vec4 lightSource : lights){
+    for (vec4 lightSource : lights)
+    {
         if (isIlluminated(rti, lightSource, objects))
         {
             brightness += applyDiffuse(rti, lightSource);
             brightness += applySpecularLight(rti, lightSource, cameraRay);
         }
     }
+
     brightness = applyAmbiantLight(brightness, ambiance);
     uint32_t colour = applyBrightness(rti.intersectedTriangle.colour, brightness);
 
