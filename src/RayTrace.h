@@ -40,10 +40,12 @@ bool getClosestIntersection(const vec3& cameraPosition, const vec3& rayDirection
 {
     bool found = false;
     float minPointDistance = std::numeric_limits<float>::infinity();
-    for (Object object : objects)
+    for (int i = 0; i < (int) objects.size(); ++i)
     {
-        for (ModelTriangle triangle : object.triangles)
+        Object object = objects[i];
+        for (int j = 0; j < (int) object.triangles.size(); ++j)
         {
+            ModelTriangle triangle = object.triangles[j];
             vec3 e0 = triangle.vertices[1] - triangle.vertices[0];
             vec3 e1 = triangle.vertices[2] - triangle.vertices[0];
             vec3 SPVector = cameraPosition - triangle.vertices[0];
@@ -63,6 +65,9 @@ bool getClosestIntersection(const vec3& cameraPosition, const vec3& rayDirection
                 result.intersectionPoint = triangle.vertices[0] + u * e0 + v * e1;
                 result.distanceFromCamera = minPointDistance;
                 result.intersectedTriangle = triangle;
+                result.objectId = i;
+                result.triangleId = j;
+
                 found = true;
             }
         }

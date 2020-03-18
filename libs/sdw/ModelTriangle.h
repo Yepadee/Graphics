@@ -22,15 +22,6 @@ class ModelTriangle
       colour = trigColour;
     }
 
-    bool operator==(const ModelTriangle& other) const
-    {
-      bool equal = true;
-      equal &= other.vertices[0] == vertices[0];
-      equal &= other.vertices[1] == vertices[1];
-      equal &= other.vertices[2] == vertices[2];
-
-      return equal;
-    }
 };
 
 std::ostream& operator<<(std::ostream& os, const ModelTriangle& triangle)
@@ -42,4 +33,24 @@ std::ostream& operator<<(std::ostream& os, const ModelTriangle& triangle)
     return os;
 }
 
+bool operator==(const ModelTriangle &lhs, const ModelTriangle &rhs)
+{
+  bool equal = true;
+  for (int i = 0; i < 3; i++)
+  {
+    equal &= glm::all(glm::equal(lhs.vertices[i], rhs.vertices[i]));
+  }
 
+  return equal;
+}
+
+bool operator!=(const ModelTriangle &lhs, const ModelTriangle &rhs)
+{
+  bool equal = true;
+  for (int i = 0; i < 3; i++)
+  {
+    equal &= glm::all(glm::notEqual(lhs.vertices[i], rhs.vertices[i]));
+  }
+
+  return equal;
+}

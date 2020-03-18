@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "PixelUtil.h"
+#include "Shadows.h"
 
 using namespace glm;
 
@@ -110,50 +111,6 @@ uint32_t applyBrightness(Colour colour, float brightness)
 }
 
 /**
- * Determine if a point is illuminated by a light source.
- *
- * @param rti Ray-triangle intersection.
- * @param lightSource The location and brightness of the light.
- * @param objects A list of all object that may be between the point and the lightsource.
- * @return Wether or not a point is illuminated by the lightsource.
- */
-bool isIlluminated(const RayTriangleIntersection& rti, const vec4& lightSource,
-                   const std::vector<Object>& objects)
-{
-    vec3 shadowRay =  vec3(lightSource) - rti.intersectionPoint;
-    float rayLength = length(shadowRay);
-
-    float minDistance = 0.4f;
-
-    for (Object object : objects)
-    {
-        for (const ModelTriangle triangle : object.triangles)
-        {
-            vec3 e0 = triangle.vertices[1] - triangle.vertices[0];
-            vec3 e1 = triangle.vertices[2] - triangle.vertices[0];
-            vec3 SPVector = rti.intersectionPoint - triangle.vertices[0];
-            mat3 DEMatrix(-normalize(shadowRay), e0, e1);
-            vec3 possibleSolution = glm::inverse(DEMatrix) * SPVector;
-
-            float t = possibleSolution.x;
-            float u = possibleSolution.y;
-            float v = possibleSolution.z;
-
-            if (u >= 0.0f && u <= 1.0f &&
-                v >= 0.0f && v <= 1.0f &&
-                u + v     <=      1.0f &&  
-                t         <  rayLength &&
-                t         >  minDistance)
-            {
-               return false;
-            }
-        }
-    }
-
-    return true;
-}
-
-/**
  * Calculate and apply brightness to a point from all light sources.
  *
  * @param rti Ray-triangle intersection.
@@ -166,11 +123,10 @@ uint32_t illuminatePoint(RayTriangleIntersection rti, vec3 cameraRay, std::vecto
     float brightness = 0.0f;
     for (vec4 lightSource : lights)
     {
-        if (isIlluminated(rti, lightSource, objects))
-        {
-            brightness += applyDiffuse(rti, lightSource);
-            brightness += applySpecularLight(rti, lightSource, cameraRay);
-        }
+        brightness += applyDiffuse(rti, lightSource);
+        brightness += applySpecularLight(rti, lightSource, cameraRay);
+        //brightness = 1.0f;
+        brightness *= (1.0f - getShadowIntensity(rti, lightSource, objects));
     }
 
     brightness = applyAmbiantLight(brightness, ambiance);
