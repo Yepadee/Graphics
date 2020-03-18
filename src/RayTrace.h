@@ -100,7 +100,6 @@ void rayTraceObjects(const std::vector<Object>& objects, const std::vector<vec4>
     {
         for (int i = 0; i < window.width; ++i)
         {
-            int sum = 0;
             int sumRed = 0;
             int sumGreen = 0;
             int sumBlue = 0;
@@ -122,16 +121,16 @@ void rayTraceObjects(const std::vector<Object>& objects, const std::vector<vec4>
                     sumRed += offset.z * (colour & (255 << 16));
                     sumGreen += offset.z * (colour & (255 << 8));
                     sumBlue += offset.z * (colour & (255));
-                    sumWeights += offset.z;
-
                 }
                 else
                 {
                     // nothing
                 }
+
+                sumWeights += offset.z;
             }
-            sum = packRGB(sumRed / sumWeights, sumGreen / sumWeights, sumBlue / sumWeights);
-            window.setPixelColour(i, j, sum);
+            uint32_t aaColour = packRGB(sumRed / sumWeights, sumGreen / sumWeights, sumBlue / sumWeights);
+            window.setPixelColour(i, j, aaColour);
         }
     }
 }

@@ -89,7 +89,13 @@ void draw()
       rasteriseObjects(objects, cameraToWorld, focalLength, window);
       break;
     case 2:
-      std::vector<glm::vec3> offsets = {{0, 0, 2}, {0.5, 0.5, 1}, {0.5, -0.5, 1}, {-0.5, 0.5, 1}, {-0.5, -0.5, 1}};
+      std::vector<glm::vec3> offsets = {
+        {0.0f, 0.0f, 2.0f},
+        {0.5f, 0.5f, 1.0f},
+        {0.5f, -0.5f, 1.0f},
+        {-0.5f, 0.5f, 1.0f},
+        {-0.5f, -0.5f, 1.0f}
+      };
       rayTraceObjects(objects, lights, cameraToWorld, focalLength, window, offsets);
       break;
   }
