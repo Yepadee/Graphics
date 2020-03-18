@@ -73,7 +73,7 @@ void DrawingWindow::setPixelColour(int x, int y, uint32_t colour)
   else pixelBuffer[(y*width)+x] = colour;
 }
 
-uint32_t DrawingWindow::getPixelColour(int x, int y)
+uint32_t DrawingWindow::getPixelColour(int x, int y) const
 {
   if((x<0) || (x>=width) || (y<0) || (y>=height)) {
     std::cout << x << "," <<  y << " not on visible screen area" << std::endl;

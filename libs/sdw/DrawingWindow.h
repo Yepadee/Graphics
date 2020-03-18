@@ -23,7 +23,7 @@ public:
   void renderFrame();
   bool pollForInputEvents(SDL_Event *event);
   void setPixelColour(int x, int y, uint32_t colour);
-  uint32_t getPixelColour(int x, int y);
+  uint32_t getPixelColour(int x, int y) const;
   void clearPixels();
 
   void printMessageAndQuit(const char* message, const char* error)

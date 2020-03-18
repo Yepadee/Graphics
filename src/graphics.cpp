@@ -12,14 +12,20 @@
 #include "Camera.h"
 #include "Rasterise.h"
 #include "RayTrace.h"
+#include "AntiAliasing.h"
 
 #include "KeyInput.h"
 
 using namespace std;
 using namespace glm;
 
+#define SCALE 3
+
 #define WIDTH 480
 #define HEIGHT 360
+
+#define AA_WIDTH WIDTH * SCALE + 2
+#define AA_HEIGHT HEIGHT * SCALE + 2
 
 #define BLACK 0
 
@@ -28,8 +34,10 @@ void draw();
 void update();
 void handleEvent(SDL_Event event);
 
-DrawingWindow window = DrawingWindow(WIDTH, HEIGHT, false);
+DrawingWindow aaWindow;
 
+
+DrawingWindow window = DrawingWindow(WIDTH, HEIGHT, false);
 
 float theta = 0.0f;
 
@@ -38,12 +46,12 @@ glm::vec3 cameraAngle(0.0f, 0.0f, 0.0f);
 glm::mat4x4 cameraToWorld = lookAt({0, 2, 5}, {0, 0, 0});
 
 
-float canvasWidth = WIDTH;
-float canvasHeight = HEIGHT;
-float imageWidth = WIDTH;
-float imageHeight = HEIGHT;
+float canvasWidth = AA_WIDTH;
+float canvasHeight = AA_HEIGHT;
+float imageWidth = AA_WIDTH;
+float imageHeight = AA_HEIGHT;
 
-float focalLength = WIDTH / 2;
+float focalLength = AA_WIDTH / 2;
 
 std::vector<Object> objects = loadOBJ("models/cornell-box.obj", 1.0f);
 
@@ -58,8 +66,11 @@ int movementMode = 1;
 
 int main(int argc, char* argv[])
 {
+  aaWindow.width = AA_WIDTH;
+  aaWindow.height = AA_HEIGHT;
+
   SDL_Event event;
-  initDepthBuffer(WIDTH, HEIGHT);
+  initDepthBuffer(AA_WIDTH, AA_HEIGHT);
 
   //cameraToWorld = constructCameraSpace(cameraPos, cameraAngle);
   //rayTraceObjects(objects, lights, cameraToWorld, focalLength, window);
@@ -78,21 +89,23 @@ int main(int argc, char* argv[])
 void draw()
 {
   window.clearPixels();
+  aaWindow.clearPixels();
   clearDepthBuffer();
 
   switch (drawMode)
   {
     case 0:
-      rasteriseObjectsWireframe(objects, cameraToWorld, focalLength, window);
+      rasteriseObjectsWireframe(objects, cameraToWorld, focalLength, aaWindow);
       break;
     case 1:
-      rasteriseObjects(objects, cameraToWorld, focalLength, window);
+      rasteriseObjects(objects, cameraToWorld, focalLength, aaWindow);
       break;
     case 2:
-      rayTraceObjects(objects, lights, cameraToWorld, focalLength, window);
+      rayTraceObjects(objects, lights, cameraToWorld, focalLength, aaWindow);
       break;
   }
 
+  antiAlias(aaWindow, window);
 
 }
 
