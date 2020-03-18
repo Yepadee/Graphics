@@ -118,13 +118,9 @@ void rayTraceObjects(const std::vector<Object>& objects, const std::vector<vec4>
                     uint32_t colour = illuminatePoint(rti, rayWorldSpace, objects, lights);
 
                     
-                    sumRed += offset.z * (colour & (255 << 16));
-                    sumGreen += offset.z * (colour & (255 << 8));
+                    sumRed += offset.z * ((colour & (255 << 16)) >> 16);
+                    sumGreen += offset.z * ((colour & (255 << 8)) >> 8);
                     sumBlue += offset.z * (colour & (255));
-                }
-                else
-                {
-                    // nothing
                 }
 
                 sumWeights += offset.z;
