@@ -27,14 +27,14 @@ bool isIlluminated(const vec3& triangleIntersectionPoint, int objectId, int tria
     vec3 shadowRay =  vec3(lightSource) - triangleIntersectionPoint;
     float rayLength = length(shadowRay);
 
-    float minDistance = 0.01f;
+    float minDistance = 0.3f;
 
     for (int i = 0; i < (int) objects.size(); ++i)
     {
         Object object = objects[i];
         for (int j = 0; j < (int) object.triangles.size(); ++j)
         {
-            //if (i == objectId && j == triangleId) continue;
+            if (i == objectId && j == triangleId) continue;
             ModelTriangle triangle = object.triangles[j];
             vec3 e0 = triangle.vertices[1] - triangle.vertices[0];
             vec3 e1 = triangle.vertices[2] - triangle.vertices[0];
@@ -72,8 +72,8 @@ float getShadowIntensity(const RayTriangleIntersection& rti, const vec4& lightSo
                          const std::vector<Object>& objects)
 {   float shadowIntensity = 0.0f;
 
-    float intensityCoeff = 1.0f;
-    float surfaceShift = 0.5f;
+    float intensityCoeff = 0.5f;
+    float surfaceShift = 0.3f;
 
     vec3 surfaceNormal = normalize(cross(rti.intersectedTriangle.vertices[1] - rti.intersectedTriangle.vertices[0], 
                                rti.intersectedTriangle.vertices[2] - rti.intersectedTriangle.vertices[0]));
@@ -104,13 +104,8 @@ float getShadowIntensity(const RayTriangleIntersection& rti, const vec4& lightSo
             displacement += stepSize;
         }
 
-        shadowIntensity = intensityCoeff * std::min(1.0f, abs(pow(displacement, 1.5f)));
-        //if (shadowIntensity > 0.0f) std::cout << "shadowIntensity: " << shadowIntensity << std::endl;
-        //shadowIntensity = 0.5f;
-        
+        shadowIntensity = intensityCoeff * std::min(1.0f, abs(pow(displacement, 1.5f)));    
     }
 
-    //if (midDark) shadowIntensity = 1.0f;
-    
     return shadowIntensity;
 }
