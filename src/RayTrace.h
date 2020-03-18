@@ -100,10 +100,10 @@ void rayTraceObjects(const std::vector<Object>& objects, const std::vector<vec4>
     {
         for (int i = 0; i < window.width; ++i)
         {
-            int sumRed = 0;
-            int sumGreen = 0;
-            int sumBlue = 0;
-            int sumWeights = 0;
+            float sumRed = 0;
+            float sumGreen = 0;
+            float sumBlue = 0;
+            float sumWeights = 0.0f;
 
             for (vec3 offset : aaOffsets)
             {
