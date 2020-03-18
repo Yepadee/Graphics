@@ -85,7 +85,7 @@ bool getClosestIntersection(const vec3& cameraPosition, const vec3& rayDirection
  * @param focalLength The focal length of the camera.
  * @param window The window to draw ray-traced objects on.
  */
-void rayTraceObjects(const std::vector<Object>& objects, const std::vector<vec4>& lights, const mat4x4& cameraToWorld, float focalLength, DrawingWindow& window)
+void rayTraceObjects(const std::vector<Object>& objects, const std::vector<vec4>& lights, const mat4x4& cameraToWorld, float focalLength, DrawingWindow& window, std::vector<vec3> aaOffsets)
 {
     mat3x3 cameraSpace = getCameraRotation(cameraToWorld);
     vec3 cameraPos = getCameraPosition(cameraToWorld);
@@ -100,22 +100,38 @@ void rayTraceObjects(const std::vector<Object>& objects, const std::vector<vec4>
     {
         for (int i = 0; i < window.width; ++i)
         {
-            rayCameraSpace.x = i - window.width / 2.0f;
-            rayCameraSpace.y = window.height / 2.0f - j;
-            rayCameraSpace.z = -focalLength;
+            int sum = 0;
+            int sumRed = 0;
+            int sumGreen = 0;
+            int sumBlue = 0;
+            int sumWeights = 0;
 
-            rayWorldSpace = normalize(cameraSpace * rayCameraSpace);
-
-            if (getClosestIntersection(cameraPos, rayWorldSpace, objects, rti))
+            for (vec3 offset : aaOffsets)
             {
-                uint32_t colour = illuminatePoint(rti, rayWorldSpace, objects, lights);
+                rayCameraSpace.x = i - window.width / 2.0f + offset.x;
+                rayCameraSpace.y = window.height / 2.0f - j + offset.y;
+                rayCameraSpace.z = -focalLength;
 
-                window.setPixelColour(i, j, colour);
+                rayWorldSpace = normalize(cameraSpace * rayCameraSpace);
+
+                if (getClosestIntersection(cameraPos, rayWorldSpace, objects, rti))
+                {
+                    uint32_t colour = illuminatePoint(rti, rayWorldSpace, objects, lights);
+
+                    
+                    sumRed += offset.z * (colour & (255 << 16));
+                    sumGreen += offset.z * (colour & (255 << 8));
+                    sumBlue += offset.z * (colour & (255));
+                    sumWeights += offset.z;
+
+                }
+                else
+                {
+                    // nothing
+                }
             }
-            else
-            {
-                window.setPixelColour(i, j, 0);
-            }
+            sum = packRGB(sumRed / sumWeights, sumGreen / sumWeights, sumBlue / sumWeights);
+            window.setPixelColour(i, j, sum);
         }
     }
 }
