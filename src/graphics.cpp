@@ -45,6 +45,8 @@ float imageHeight = HEIGHT;
 
 float focalLength = WIDTH / 2;
 
+int frameNo = 0;
+
 std::vector<Object> objects = loadOBJ("models/cornell-box.obj", 1.0f);
 
 std::vector<vec4> lights = {
@@ -106,7 +108,6 @@ void draw()
 void cameraControls()
 {
   float vel = 0.01f;
-
   
 
   // Position
@@ -132,6 +133,12 @@ void cameraControls()
 
   if(keyDown(SDL_SCANCODE_U)) focalLength +=  10;
   if(keyDown(SDL_SCANCODE_I)) focalLength += -10;
+
+  if(keyPressed(SDL_SCANCODE_Y))
+  {
+    saveFrame(window, frameNo);
+    frameNo++;
+  }
 
   
 

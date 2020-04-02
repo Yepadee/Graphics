@@ -9,6 +9,7 @@ class ModelTriangle
   public:
     glm::vec3 vertices[3];
     Colour colour;
+    glm::vec3 normal;
 
     ModelTriangle()
     {
@@ -20,6 +21,7 @@ class ModelTriangle
       vertices[1] = v1;
       vertices[2] = v2;
       colour = trigColour;
+      normal = (glm::cross(v1 - v0, v2 - v0));
     }
 
 };

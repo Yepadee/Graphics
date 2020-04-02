@@ -110,3 +110,59 @@ Image loadPPM(const char* fileName)
   return Image(width, height, payload);
 }
 
+void saveFrame(DrawingWindow& drawingWindow, int frameNo)
+{
+  
+  int width = drawingWindow.width;
+  int height = drawingWindow.height;
+
+  std::string filename = "";
+  filename += "renders/frame" + std::to_string(frameNo) + ".ppm";
+
+  std::cout << "saving frame: " << filename << std::endl;
+
+  std::ofstream file;
+  file.open(filename);
+
+  file << "P6" << std::endl;
+  file << "#Created using James and Tommy\'s amazing frame renderer!" << std::endl;
+  file << width << " " << height << std::endl;
+  file << "255" << std::endl;
+
+  /*
+  file.write("P6\n");
+  file.write(width + " " + height + "\n"); file.write("255\n");
+  for (int i=0; i<pixels.length; y++) {
+    file.write(getRed(pixel[i])); 
+    file.write(getGreen(pixel[i])); 
+    file.write(getBlue(pixel[i]));
+  } 
+  file.close();
+  */
+
+  for (int j = 0; j < height; ++j)
+  {
+    for (int i = 0; i < width; ++i)
+    {
+      uint32_t pixel = drawingWindow.getPixelColour(i, j);
+
+      char r = (char) getSubPixel(pixel, 2);
+      char g = (char) getSubPixel(pixel, 1);
+      char b = (char) getSubPixel(pixel, 0);
+
+      file << r;
+      file << g;
+      file << b;
+    }
+
+  }
+
+  if (!file.good())
+  {
+    std::cout << "file evil!!!" << std::endl;
+    exit(0);
+  }
+
+  file.close();
+
+}

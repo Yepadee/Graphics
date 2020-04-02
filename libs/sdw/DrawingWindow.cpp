@@ -53,6 +53,11 @@ void DrawingWindow::renderFrame()
   SDL_RenderPresent(renderer);
 }
 
+uint32_t* DrawingWindow::getPixelBuffer()
+{
+  return pixelBuffer;
+}
+
 bool DrawingWindow::pollForInputEvents(SDL_Event *event)
 {
   if(SDL_PollEvent(event)) {

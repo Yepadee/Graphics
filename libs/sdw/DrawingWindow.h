@@ -21,6 +21,7 @@ public:
   DrawingWindow(int w, int h, bool fullscreen);
   void destroy();
   void renderFrame();
+  uint32_t* getPixelBuffer();
   bool pollForInputEvents(SDL_Event *event);
   void setPixelColour(int x, int y, uint32_t colour);
   uint32_t getPixelColour(int x, int y) const;
