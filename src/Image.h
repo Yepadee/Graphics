@@ -125,7 +125,7 @@ void saveFrame(DrawingWindow& drawingWindow, int frameNo)
   file.open(filename);
 
   file << "P6" << std::endl;
-  file << "#Created using James and Tommy\'s amazing frame renderer!" << std::endl;
+  file << "# Created using James and Tommy\'s amazing frame renderer!" << std::endl;
   file << width << " " << height << std::endl;
   file << "255" << std::endl;
 
@@ -150,9 +150,9 @@ void saveFrame(DrawingWindow& drawingWindow, int frameNo)
       char g = (char) getSubPixel(pixel, 1);
       char b = (char) getSubPixel(pixel, 0);
 
-      file << r;
-      file << g;
-      file << b;
+      file.put(r);
+      file.put(g);
+      file.put(b);
     }
 
   }

@@ -27,7 +27,7 @@ uint32_t packGreyscale(int n)
 
 uint32_t getSubPixel(uint32_t pixel, int i)
 {
-  return pixel & (255 << i * 8);
+  return (pixel & (255 << i * 8)) >> (i * 8);
 }
 
 uint32_t averagePixels(std::vector<uint32_t> pixels, std::vector<int> weights)
