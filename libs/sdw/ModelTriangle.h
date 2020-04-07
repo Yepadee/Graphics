@@ -4,12 +4,16 @@
 #include "Colour.h"
 #include <string>
 
+#include <vector>
+
 class ModelTriangle
 {
   public:
     glm::vec3 vertices[3];
     Colour colour;
     glm::vec3 normal;
+    std::vector<glm::vec3> vertNormals[3];
+    bool vertNormalsSet;
 
     ModelTriangle()
     {
@@ -22,6 +26,7 @@ class ModelTriangle
       vertices[2] = v2;
       colour = trigColour;
       normal = (glm::cross(v1 - v0, v2 - v0));
+      vertNormalsSet = false;
     }
 
 };

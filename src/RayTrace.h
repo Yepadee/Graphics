@@ -77,6 +77,31 @@ bool getClosestIntersection(const vec3& cameraPosition, const vec3& rayDirection
 }
 
 
+std::vector<vec3> getVertexNormals(Object object, RayTriangleIntersection rti)
+{
+    std::vector<vec3> avgVerticies = { {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
+    std::vector<int> numVerticies = {0, 0, 0};
+    for (int t = 0; t < (int) object.triangles.size(); t++)
+    {
+        for (int v = 0; v < 3; v++)
+        {
+            if (object.triangles[t].vertices[v] == rti.intersectedTriangle.vertices[v])
+            {
+                avgVerticies[v] += object.triangles[t].normal;
+                numVerticies[v]++;
+            }
+        }
+    }
+
+    for (int v = 0; v < 3; v++)
+    {
+        avgVerticies[v] / (float)numVerticies[v];
+    }
+
+    return (avgVerticies);
+}
+
+
 /**
  * Render objects in scene to window via ray-tracing.
  *
@@ -115,7 +140,23 @@ void rayTraceObjects(const std::vector<Object>& objects, const std::vector<vec4>
 
                 if (getClosestIntersection(cameraPos, rayWorldSpace, objects, rti))
                 {
+                    // Get the three vertex normals for the rti if not already calculated
+                    if (rti.intersectedTriangle.vertNormalsSet == false)
+                    {
+                        //std::vector<vec3> vertexNormals = getVertexNormals(objects[rti.objectId], rti);
+
+                        //how you do this?
+                        //rti.intersectedTriangle.vertNormals[0] = vertexNormals[0];
+                        rti.intersectedTriangle.vertNormalsSet = true;
+                    }
+
+                    // and then interpolate to correct normal for position
+                    //vec3 interpolatedNormal = rti.intersectedTriangle.normal;
+
+                    // Then give this normal into illuminatepoint
+
                     uint32_t colour = illuminatePoint(rti, rayWorldSpace, objects, lights);
+                    //uint32_t colour = illuminatePointGouraud(rti, interpolatedNormal, rayWorldSpace, objects, lights);
 
                     
                     sumRed += offset.z * ((colour & (255 << 16)) >> 16);
@@ -130,4 +171,5 @@ void rayTraceObjects(const std::vector<Object>& objects, const std::vector<vec4>
         }
     }
 }
+
 
