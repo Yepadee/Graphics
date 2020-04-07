@@ -5,6 +5,8 @@
 #include <unordered_map>
 #include <Utils.h>
 
+#include "Interpolation.h"
+
 class ModelTriangle;
 
 struct Object

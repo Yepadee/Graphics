@@ -68,6 +68,12 @@ bool getClosestIntersection(const vec3& cameraPosition, const vec3& rayDirection
                 result.objectId = i;
                 result.triangleId = j;
 
+                vec3 n0 = triangle.vertexNormals[0];
+                vec3 n1 = triangle.vertexNormals[1];
+                vec3 n2 = triangle.vertexNormals[2];
+
+                result.normal = u * n0 + v * n1 + (1 - u - v) * n2;
+
                 found = true;
             }
         }
@@ -116,24 +122,7 @@ void rayTraceObjects(const std::vector<Object>& objects, const std::vector<vec4>
 
                 if (getClosestIntersection(cameraPos, rayWorldSpace, objects, rti))
                 {
-                    // Get the three vertex normals for the rti if not already calculated
-                    if (rti.intersectedTriangle.vertNormalsSet == false)
-                    {
-                        //std::vector<vec3> vertexNormals = getVertexNormals(objects[rti.objectId], rti);
-
-                        //how you do this?
-                        //rti.intersectedTriangle.vertNormals[0] = vertexNormals[0];
-                        rti.intersectedTriangle.vertNormalsSet = true;
-                    }
-
-                    // and then interpolate to correct normal for position
-                    //vec3 interpolatedNormal = rti.intersectedTriangle.normal;
-
-                    // Then give this normal into illuminatepoint
-
                     uint32_t colour = illuminatePoint(rti, rayWorldSpace, objects, lights);
-                    //uint32_t colour = illuminatePointGouraud(rti, interpolatedNormal, rayWorldSpace, objects, lights);
-
                     
                     sumRed += offset.z * ((colour & (255 << 16)) >> 16);
                     sumGreen += offset.z * ((colour & (255 << 8)) >> 8);

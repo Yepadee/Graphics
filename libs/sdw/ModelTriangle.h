@@ -6,6 +6,8 @@
 
 #include <vector>
 
+#define NORMAL_MAP_SIZE 32
+
 class ModelTriangle
 {
   public:
