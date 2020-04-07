@@ -75,7 +75,7 @@ float getShadowIntensity(const RayTriangleIntersection& rti, const vec4& lightSo
     float intensityCoeff = 0.5f;
     float surfaceShift = 0.3f;
 
-    vec3 surfaceNormal = normalize(rti.intersectedTriangle.normal);
+    vec3 surfaceNormal = normalize(rti.normal);
 
     vec3 surfaceDisplacement = surfaceShift * surfaceNormal;
 

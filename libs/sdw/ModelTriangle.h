@@ -41,6 +41,12 @@ std::ostream& operator<<(std::ostream& os, const ModelTriangle& triangle)
     return os;
 }
 
+std::ostream& operator<<(std::ostream& os, const glm::vec3& vec)
+{
+    os << "{" << vec.x << ", " << vec.y << ", " << vec.z << "}";
+    return os;
+}
+
 bool operator==(const ModelTriangle &lhs, const ModelTriangle &rhs)
 {
   bool equal = true;

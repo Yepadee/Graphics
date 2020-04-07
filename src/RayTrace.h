@@ -72,7 +72,9 @@ bool getClosestIntersection(const vec3& cameraPosition, const vec3& rayDirection
                 vec3 n1 = triangle.vertexNormals[1];
                 vec3 n2 = triangle.vertexNormals[2];
 
-                result.normal = u * n0 + v * n1 + (1 - u - v) * n2;
+                result.normal = u * n1 + v * n2 + (1 - u - v) * n0;
+
+                
 
                 found = true;
             }

@@ -37,7 +37,7 @@ float applyProximityLight(RayTriangleIntersection rti, vec4 lightSource)
  */
 float applyAOILight(RayTriangleIntersection rti, vec4 lightSource)
 {
-    vec3 normal = rti.intersectedTriangle.normal;
+    vec3 normal = rti.normal;
     
     vec3 ray = vec3(lightSource) - rti.intersectionPoint;
 
@@ -73,7 +73,7 @@ float applySpecularLight(RayTriangleIntersection rti, vec4 lightSource, vec3 cam
 {
     float n = 10.0f;
 
-    vec3 normal = rti.intersectedTriangle.normal;
+    vec3 normal = rti.normal;
     vec3 lightRay = rti.intersectionPoint - vec3(lightSource);
     vec3 reflected = reflectRay(lightRay, normal);
     float magnitude = dot(normalize(reflected), -normalize(cameraRay));
