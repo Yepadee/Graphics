@@ -91,6 +91,39 @@ glm::vec3 readVertex(std::ifstream& ifs)
     return glm::vec3(p0, p1, p2);
 }
 
+bool triangleHasVertex(const ModelTriangle& triangle, const glm::vec3& v)
+{
+    for (int i = 0; i < 3; ++i)
+    {
+        if (triangle.vertices[i] == v) return true;
+    }
+    return false;
+}
+
+void setVertexNormals(Object& object, ModelTriangle& triangle)
+{
+    //float vertexNormals[3] = triangle.vertexNormals;
+    glm::vec3 sumVertexNormal[3] = { {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
+    float numVerticies[3] = {0.0f, 0.0f, 0.0f};
+    for (ModelTriangle objectTriangle : object.triangles)
+    {
+        for (int v = 0; v < 3; v++)
+        {
+            glm::vec3 vertex = triangle.vertices[v];
+            if (triangleHasVertex(objectTriangle, vertex))
+            {
+                sumVertexNormal[v] += objectTriangle.normal;
+                numVerticies[v] ++;
+            }
+        }
+    }
+
+    for (int v = 0; v < 3; v++)
+    {
+        triangle.vertexNormals[v] = sumVertexNormal[v] / numVerticies[v];
+    }
+}
+
 Object readObject(std::ifstream& ifs, std::unordered_map<std::string, Colour>& colourMap, int& totalVertices, float scaleFactor)
 {
     std::string name;

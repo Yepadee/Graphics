@@ -77,30 +77,6 @@ bool getClosestIntersection(const vec3& cameraPosition, const vec3& rayDirection
 }
 
 
-std::vector<vec3> getVertexNormals(Object object, RayTriangleIntersection rti)
-{
-    std::vector<vec3> avgVerticies = { {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
-    std::vector<int> numVerticies = {0, 0, 0};
-    for (int t = 0; t < (int) object.triangles.size(); t++)
-    {
-        for (int v = 0; v < 3; v++)
-        {
-            if (object.triangles[t].vertices[v] == rti.intersectedTriangle.vertices[v])
-            {
-                avgVerticies[v] += object.triangles[t].normal;
-                numVerticies[v]++;
-            }
-        }
-    }
-
-    for (int v = 0; v < 3; v++)
-    {
-        avgVerticies[v] / (float)numVerticies[v];
-    }
-
-    return (avgVerticies);
-}
-
 
 /**
  * Render objects in scene to window via ray-tracing.
