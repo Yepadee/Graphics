@@ -37,7 +37,7 @@ float applyProximityLight(RayTriangleIntersection rti, vec4 lightSource)
  */
 float applyAOILight(RayTriangleIntersection rti, vec4 lightSource)
 {
-    vec3 normal = rti.intersectedTriangle.normal;
+    vec3 normal = rti.tannormal;
     
     vec3 ray = vec3(lightSource) - rti.intersectionPoint;
 
