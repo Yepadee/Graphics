@@ -24,8 +24,6 @@ struct Object
 private:
     void setVertexNormals()
     {
-        std::cout << "before: " << std::endl;
-
         for (ModelTriangle& triangle1 : triangles)
         {
 
@@ -46,24 +44,8 @@ private:
                 }
 
                 triangle1.vertexNormals[v] = sumVertexNormal / numVerticies;
-                std::cout << triangle1.vertexNormals[v] << std::endl;
             }
-            
-            std::cout << std::endl;
-            std::cout << std::endl;
         }
-
-        std::cout << "after: " << std::endl;
-        for (ModelTriangle t : triangles)
-        {
-            for (int i = 0; i < 3; ++ i)
-            {
-                std::cout << t.vertexNormals[i] << ", ";
-            }
-            std::cout << std::endl;
-            std::cout << std::endl;
-        }
-
     }
 
     bool triangleHasVertex(const ModelTriangle& triangle, const glm::vec3& v)
@@ -147,13 +129,6 @@ glm::vec3 readVertex(std::ifstream& ifs)
     p2 = std::stof(buffer);
 
     return glm::vec3(p0, p1, p2);
-}
-
-
-
-void setVertexNormals(Object& object)
-{
-
 }
 
 Object readObject(std::ifstream& ifs, std::unordered_map<std::string, Colour>& colourMap, int& totalVertices, float scaleFactor)

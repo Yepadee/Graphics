@@ -42,6 +42,7 @@ float applyAOILight(RayTriangleIntersection rti, vec4 lightSource)
     vec3 ray = vec3(lightSource) - rti.intersectionPoint;
 
     float aoiLight = dot(normalize(normal), normalize(ray));
+
     return std::max(aoiLight, 0.0f);
 }
 
@@ -54,7 +55,7 @@ float applyAOILight(RayTriangleIntersection rti, vec4 lightSource)
  */
 float applyDiffuse(RayTriangleIntersection rti, vec4 lightSource)
 {
-    return applyProximityLight(rti, lightSource) * applyAOILight(rti, lightSource);
+    return applyAOILight(rti, lightSource) * applyProximityLight(rti, lightSource);
 }
 
 vec3 reflectRay(const vec3 &ray, const vec3 &normal) 
