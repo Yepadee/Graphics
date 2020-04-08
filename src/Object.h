@@ -79,21 +79,28 @@ Colour readColour(std::ifstream& ifs)
     std::string buffer;
     float rf, gf, bf;
 
-    std::getline(ifs, buffer);
-    colour.name = buffer.substr(7, buffer.size());
+    // Read colour name
+    ifs >> buffer;
+    colour.name = buffer;
 
-    std::getline(ifs, buffer);
-    std::string* tokens = split(buffer, ' ');
+    // Read light type
+    ifs >> buffer;
 
-    rf = std::stof(tokens[1]);
-    gf = std::stof(tokens[2]);
-    bf = std::stof(tokens[3]);
+    // Read red light
+    ifs >> buffer;
+    rf = std::stof(buffer);
+
+    // Read green light
+    ifs >> buffer;
+    gf = std::stof(buffer);
+
+    // Read blue light
+    ifs >> buffer;
+    bf = std::stof(buffer);
 
     colour.red   = (int) (rf * 255.0f);
     colour.green = (int) (gf * 255.0f);
     colour.blue  = (int) (bf * 255.0f);
-
-    std::getline(ifs, buffer);
 
     return colour;
 }
@@ -103,16 +110,46 @@ std::unordered_map<std::string, Colour> loadColours(const char* filepath)
     std::unordered_map<std::string, Colour> colours;
     std::ifstream ifs(filepath, std::ifstream::in);
 
-    while(ifs.good())
+    // Skip texture info
+
+    std::string buffer;
+    ifs >> buffer;
+    while(buffer != "newmtl")
+    {
+        ifs >> buffer;
+    }
+
+    while(buffer == "newmtl" && ifs.good())
     {
         Colour colour = readColour(ifs);
-        
         colours[colour.name] = colour;
+        ifs >> buffer;
     }
 
     ifs.close();
 
     return colours;
+}
+
+bool loadTexture(const char* filepath, Image& output)
+{
+    std::vector<Image> textures;
+    std::ifstream ifs(filepath, std::ifstream::in);
+
+    std::string textureFileName;
+    std::string buffer;
+    ifs >> buffer;
+
+    if (buffer == "map_Kd")
+    {
+        ifs >> textureFileName;
+
+        output = loadPPM(textureFileName.c_str());
+
+        return true;
+    }
+
+    return false;
 }
 
 vec3 readVec3(std::ifstream& ifs)

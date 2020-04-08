@@ -98,7 +98,7 @@ bool getClosestIntersection(const vec3& cameraPosition, const vec3& rayDirection
  * @param focalLength The focal length of the camera.
  * @param window The window to draw ray-traced objects on.
  */
-void rayTraceObjects(const std::vector<Object>& objects, const std::vector<vec4>& lights, const mat4x4& cameraToWorld, float focalLength, DrawingWindow& window, std::vector<vec3> aaOffsets)
+void rayTraceObjects(const std::vector<Object>& objects, const std::vector<Light>& lights, const mat4x4& cameraToWorld, float focalLength, DrawingWindow& window, std::vector<vec3> aaOffsets)
 {
     mat3x3 cameraSpace = getCameraRotation(cameraToWorld);
     vec3 cameraPos = getCameraPosition(cameraToWorld);

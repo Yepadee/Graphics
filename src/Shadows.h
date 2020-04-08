@@ -17,14 +17,14 @@ using namespace glm;
  * Determine if a point is illuminated by a light source.
  *
  * @param rti Ray-triangle intersection.
- * @param lightSource The location and brightness of the light.
- * @param objects A list of all object that may be between the point and the lightsource.
- * @return Wether or not a point is illuminated by the lightsource.
+ * @param lightPosition The location and brightness of the light.
+ * @param objects A list of all object that may be between the point and the lightPosition.
+ * @return Wether or not a point is illuminated by the lightPosition.
  */
-bool isIlluminated(const vec3& triangleIntersectionPoint, int objectId, int triangleId, const vec4& lightSource,
+bool isIlluminated(const vec3& triangleIntersectionPoint, const vec3& lightPosition, int objectId, int triangleId,
                    const std::vector<Object>& objects)
 {
-    vec3 shadowRay =  vec3(lightSource) - triangleIntersectionPoint;
+    vec3 shadowRay =  lightPosition - triangleIntersectionPoint;
     float rayLength = length(shadowRay);
 
     float minDistance = 0.3f;
@@ -64,13 +64,14 @@ bool isIlluminated(const vec3& triangleIntersectionPoint, int objectId, int tria
  * Determine if a point is illuminated by a light source.
  *
  * @param rti Ray-triangle intersection.
- * @param lightSource The location and brightness of the light.
- * @param objects A list of all object that may be between the point and the lightsource.
- * @return Wether or not a point is illuminated by the lightsource.
+ * @param lightPosition The location and brightness of the light.
+ * @param objects A list of all object that may be between the point and the lightPosition.
+ * @return Wether or not a point is illuminated by the lightPosition.
  */
-float getShadowIntensity(const RayTriangleIntersection& rti, const vec4& lightSource,
+float getShadowIntensity(const RayTriangleIntersection& rti, const vec3& lightPosition,
                          const std::vector<Object>& objects)
-{   float shadowIntensity = 0.0f;
+{
+    float shadowIntensity = 0.0f;
 
     float intensityCoeff = 0.5f;
     float surfaceShift = 0.3f;
@@ -83,9 +84,9 @@ float getShadowIntensity(const RayTriangleIntersection& rti, const vec4& lightSo
     vec3 midSurfacePoint  = rti.intersectionPoint;
     vec3 highSurfacePoint = rti.intersectionPoint + surfaceDisplacement;
 
-    bool lowDark  = !isIlluminated(lowSurfacePoint , rti.objectId, rti.triangleId, lightSource, objects);
-    bool midDark  = !isIlluminated(midSurfacePoint , rti.objectId, rti.triangleId, lightSource, objects);
-    bool highDark = !isIlluminated(highSurfacePoint, rti.objectId, rti.triangleId, lightSource, objects);
+    bool lowDark  = !isIlluminated(lowSurfacePoint , lightPosition, rti.objectId, rti.triangleId, objects);
+    bool midDark  = !isIlluminated(midSurfacePoint , lightPosition, rti.objectId, rti.triangleId, objects);
+    bool highDark = !isIlluminated(highSurfacePoint, lightPosition, rti.objectId, rti.triangleId, objects);
     
     
     if (lowDark && midDark && highDark) shadowIntensity = 1.0f;
@@ -97,7 +98,7 @@ float getShadowIntensity(const RayTriangleIntersection& rti, const vec4& lightSo
 
         vec3 checkSurfacePoint = lowSurfacePoint;
 
-        while (!isIlluminated(checkSurfacePoint, rti.objectId, rti.triangleId, lightSource, objects))
+        while (!isIlluminated(checkSurfacePoint, lightPosition, rti.objectId, rti.triangleId, objects))
         {
             checkSurfacePoint = lowSurfacePoint + surfaceNormal * displacement;
             displacement += stepSize;

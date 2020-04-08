@@ -49,11 +49,11 @@ int frameNo = 0;
 
 std::vector<Object> objects = loadOBJ("models/cornell-box.obj", 1.0f, {0.0f, 0.0f, 0.0f});
 //Object sphere = loadOBJ("models/sphere.obj", 0.04f, {-1.5f, 1.5f, 0.0f})[0];
-//Object hsLogo = loadOBJ("models/logo.obj", 0.04f, {-1.5f, 1.5f, 0.0f})[0];
+//Object hsLogo = loadOBJ("models/logo.obj", 0.008f, {-3.2f, 0.0f, -1.0f})[0];
 
 
-std::vector<vec4> lights = {
-  {-0.159877f, 4.71896f, -2.98309f, 150.0f}
+std::vector<Light> lights = {
+  Light({-0.159877f, 4.71896f, -2.98309f}, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f)
   //, {0.0f, 2.4f, 1.8f, 150.0f}
 }; 
 
