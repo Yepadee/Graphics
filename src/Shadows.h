@@ -29,7 +29,7 @@ bool isIlluminated(const vec3& triangleIntersectionPoint, const vec3& lightPosit
     vec3 shadowRay =  lightPosition - triangleIntersectionPoint;
     float rayLength = length(shadowRay);
 
-    float minDistance = 0.01f;
+    float minDistance = 0.001f;
 
     for (int i = 0; i < (int) objects.size(); ++i)
     {
