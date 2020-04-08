@@ -13,6 +13,7 @@
 
 using namespace glm;
 
+
 /**
  * Calculate proximity light coefficient.
  *
@@ -125,8 +126,16 @@ uint32_t illuminatePoint(RayTriangleIntersection rti, vec3 cameraRay, std::vecto
         brightness += applyDiffuse(rti, lightSource);
         brightness += applySpecularLight(rti, lightSource, cameraRay);
         //brightness = 1.0f;
-        brightness *= (1.0f - getShadowIntensity(rti, lightSource, objects));
     }
+
+    float darkness = 1.0f;
+    for (vec4 lightSource: lights)
+    {
+        float lightShadowIntensity = getShadowIntensity(rti, lightSource, objects);
+        darkness = std::min(darkness, lightShadowIntensity);
+    }
+
+    brightness *= (1.0f - darkness);
 
     brightness = applyAmbiantLight(brightness, ambiance);
     uint32_t colour = applyBrightness(rti.intersectedTriangle.colour, brightness);

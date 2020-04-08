@@ -7,6 +7,7 @@
 
 #include "Interpolation.h"
 
+using namespace glm;
 class ModelTriangle;
 
 struct Object
@@ -18,7 +19,7 @@ struct Object
     : name(name)
     , triangles(triangles)
     {
-        setVertexNormals();
+        //setVertexNormals();
     }
 
 private:
@@ -29,10 +30,10 @@ private:
 
             for (int v = 0; v < 3; v++)
             {
-                glm::vec3 sumVertexNormal = {0.0f, 0.0f, 0.0f};
+                vec3 sumVertexNormal(0.0f, 0.0f, 0.0f);
                 float numVerticies = 0.0f;
                 
-                glm::vec3 vertex = triangle1.vertices[v];
+                vec3 vertex = triangle1.vertices[v];
 
                 for (ModelTriangle triangle2 : triangles)
                 {
@@ -48,7 +49,7 @@ private:
         }
     }
 
-    bool triangleHasVertex(const ModelTriangle& triangle, const glm::vec3& v)
+    bool triangleHasVertex(const ModelTriangle& triangle, const vec3& v)
     {
         for (int i = 0; i < 3; ++i)
         {
@@ -114,7 +115,7 @@ std::unordered_map<std::string, Colour> loadColours(const char* filepath)
     return colours;
 }
 
-glm::vec3 readVertex(std::ifstream& ifs)
+vec3 readVector(std::ifstream& ifs)
 {
     float p0, p1, p2;
     std::string buffer;
@@ -128,14 +129,15 @@ glm::vec3 readVertex(std::ifstream& ifs)
     ifs >> buffer;
     p2 = std::stof(buffer);
 
-    return glm::vec3(p0, p1, p2);
+    return vec3(p0, p1, p2);
 }
 
-Object readObject(std::ifstream& ifs, std::unordered_map<std::string, Colour>& colourMap, int& totalVertices, float scaleFactor)
+Object readObject(std::ifstream& ifs, std::unordered_map<std::string, Colour>& colourMap, int& totalVertices, float scaleFactor, vec3 displacement)
 {
     std::string name;
     std::string colour;
-    std::vector<glm::vec3> vertices;
+    std::vector<vec3> vertices;
+    std::vector<vec3> vertexNormals;
     std::vector<ModelTriangle> triangles;
 
     std::string buffer;
@@ -148,28 +150,56 @@ Object readObject(std::ifstream& ifs, std::unordered_map<std::string, Colour>& c
     ifs >> buffer;
     while (buffer == "v")
     {   
-        vertices.push_back(readVertex(ifs) * scaleFactor);
+        vertices.push_back(readVector(ifs) * scaleFactor);
         ifs >> buffer;
     }
 
-    glm::vec3 v0, v1, v2;
+    while (buffer == "vn")
+    {   
+        vertexNormals.push_back(readVector(ifs) * scaleFactor);
+        ifs >> buffer;
+    }
+
+    bool hasVertexNormals = vertexNormals.size() > 0;
+
+    vec3 v0, v1, v2;
+    vec3 n0, n1, n2;
+    int f0, f1, f2;
     while (buffer == "f")
     {
         ifs >> buffer;
         buffer.erase(buffer.size() - 1); // Remove trailing '/'
-        v0 = vertices[std::stoi(buffer) - totalVertices - 1];
+        f0 = std::stoi(buffer) - totalVertices - 1;
 
         ifs >> buffer;
         buffer.erase(buffer.size() - 1); // Remove trailing '/'
-        v1 = vertices[std::stoi(buffer) - totalVertices - 1];
+        f1 = std::stoi(buffer) - totalVertices - 1;
 
         ifs >> buffer;
         buffer.erase(buffer.size() - 1); // Remove trailing '/'
-        v2 = vertices[std::stoi(buffer) - totalVertices - 1];
+        f2 = std::stoi(buffer) - totalVertices - 1;
 
-        ModelTriangle triangle(v0, v1, v2, colourMap[colour]);
+        v0 = vertices[f0] + displacement;
+        v1 = vertices[f1] + displacement;
+        v2 = vertices[f2] + displacement;
 
-        triangles.push_back(triangle);
+        if (hasVertexNormals)
+        {
+            n0 = vertexNormals[f0];
+            n1 = vertexNormals[f1];
+            n2 = vertexNormals[f2];
+
+            ModelTriangle triangle(v0, v1, v2,
+                                   n0, n1, n2,
+                                   colourMap[colour]);
+            triangles.push_back(triangle);
+        }
+        else
+        {
+            ModelTriangle triangle(v0, v1, v2,
+                                   colourMap[colour]);
+            triangles.push_back(triangle);
+        }
 
         ifs >> buffer;
     }
@@ -187,7 +217,7 @@ Object readObject(std::ifstream& ifs, std::unordered_map<std::string, Colour>& c
  * @param scaleFactor A value all the vertices describing the objects will be scaled by.
  * @return a vector containing all the objects within the loaded file.
  */
-std::vector<Object> loadOBJ(const char* filepath, float scaleFactor)
+std::vector<Object> loadOBJ(const char* filepath, float scaleFactor, vec3 displacement)
 {
     std::unordered_map<std::string, Colour> colourMap;
     std::vector<Object> objects;
@@ -206,7 +236,7 @@ std::vector<Object> loadOBJ(const char* filepath, float scaleFactor)
     ifs >> buffer;
     while(ifs.good())
     {
-        objects.push_back(readObject(ifs, colourMap, totalVertices, scaleFactor));
+        objects.push_back(readObject(ifs, colourMap, totalVertices, scaleFactor, displacement));
     }
 
     ifs.close();

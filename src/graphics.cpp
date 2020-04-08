@@ -47,11 +47,13 @@ float focalLength = WIDTH / 2;
 
 int frameNo = 0;
 
-std::vector<Object> objects = loadOBJ("models/cornell-box.obj", 1.0f);
+std::vector<Object> objects = loadOBJ("models/cornell-box.obj", 1.0f, {0.0f, 0.0f, 0.0f});
+//Object sphere = loadOBJ("models/sphere.obj", 0.04f, {-1.5f, 1.5f, 0.0f})[0];
+
 
 std::vector<vec4> lights = {
-    {-0.159877f, 4.71896f, -2.98309f, 150.0f}
-  //, {0.0f, 2.4f, 3.8f, 100.0f}
+  {-0.159877f, 4.71896f, -2.98309f, 150.0f}
+  //, {0.0f, 2.4f, 1.8f, 150.0f}
 }; 
 
 int drawMode = 0;
@@ -65,6 +67,7 @@ int main(int argc, char* argv[])
 
   //cameraToWorld = constructCameraSpace(cameraPos, cameraAngle);
   //rayTraceObjects(objects, lights, cameraToWorld, focalLength, window);
+  //objects.push_back(sphere);
 
   while(true)
   {
