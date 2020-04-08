@@ -142,6 +142,8 @@ uint32_t illuminatePoint(RayTriangleIntersection rti, vec3 cameraRay, std::vecto
     float gl = 0.0f;
     float bl = 0.0f;
 
+
+    // Find brightness of the point
     for (Light light : lights)
     {
         brightness += applyDiffuse(rti, light);
@@ -152,20 +154,25 @@ uint32_t illuminatePoint(RayTriangleIntersection rti, vec3 cameraRay, std::vecto
         bl += light.b;
     }
 
-    float darkness = 1.0f;
-    for (Light light: lights)
-    {
-        float lightShadowIntensity = getShadowIntensity(rti, light.position, objects);
-        darkness = std::min(darkness, lightShadowIntensity);
-    }
-
-    brightness *= (1.0f - darkness);
-
-    brightness = applyAmbiantLight(brightness, ambiance);
-
     rl = min(1.0f, rl);
     gl = min(1.0f, gl);
     bl = min(1.0f, bl);
+
+
+    // Find darkness of the point
+    float darkness = 1.0f;
+    for (Light light: lights)
+    {
+        float lightShadowIntensity = getShadowIntensityVS(rti, light.position, light.radius, objects);
+        darkness = std::min(darkness, lightShadowIntensity);
+    }
+
+    // Apply darkness
+    brightness *= (1.0f - darkness);
+
+    // Apply ambiant light
+    brightness = applyAmbiantLight(brightness, ambiance);
+
 
     rl *= brightness;
     gl *= brightness;

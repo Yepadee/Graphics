@@ -57,6 +57,14 @@ std::vector<Light> lights = {
   //, {0.0f, 2.4f, 1.8f, 150.0f}
 }; 
 
+std::vector<glm::vec3> offsets = {
+  {0.0f, 0.0f, 2.0f},
+  {0.5f, 0.5f, 1.0f},
+  {0.5f, -0.5f, 1.0f},
+  {-0.5f, 0.5f, 1.0f},
+  {-0.5f, -0.5f, 1.0f}
+};
+
 int drawMode = 0;
 int movementMode = 1;
 
@@ -66,8 +74,8 @@ int main(int argc, char* argv[])
   SDL_Event event;
   initDepthBuffer(WIDTH, HEIGHT);
 
-  //cameraToWorld = constructCameraSpace(cameraPos, cameraAngle);
-  //rayTraceObjects(objects, lights, cameraToWorld, focalLength, window);
+  cameraToWorld = constructCameraSpace(cameraPos, cameraAngle);
+  rayTraceObjects(objects, lights, cameraToWorld, focalLength, window, offsets);
   //objects.push_back(sphere);
   //objects.push_back(hsLogo);
 
@@ -75,8 +83,8 @@ int main(int argc, char* argv[])
   {
     // We MUST poll for events - otherwise the window will freeze !
     if(window.pollForInputEvents(&event)) handleEvent(event);
-    update();
-    draw();
+    //update();
+    //draw();
     // Need to render the frame at the end, or nothing actually gets shown on the screen !
     window.renderFrame();
   }
@@ -96,13 +104,6 @@ void draw()
       rasteriseObjects(objects, cameraToWorld, focalLength, window);
       break;
     case 2:
-      std::vector<glm::vec3> offsets = {
-        {0.0f, 0.0f, 2.0f},
-        {0.5f, 0.5f, 1.0f},
-        {0.5f, -0.5f, 1.0f},
-        {-0.5f, 0.5f, 1.0f},
-        {-0.5f, -0.5f, 1.0f}
-      };
       rayTraceObjects(objects, lights, cameraToWorld, focalLength, window, offsets);
       break;
   }
