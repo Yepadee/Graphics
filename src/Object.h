@@ -115,7 +115,7 @@ std::unordered_map<std::string, Colour> loadColours(const char* filepath)
     return colours;
 }
 
-vec3 readVector(std::ifstream& ifs)
+vec3 readVec3(std::ifstream& ifs)
 {
     float p0, p1, p2;
     std::string buffer;
@@ -132,12 +132,29 @@ vec3 readVector(std::ifstream& ifs)
     return vec3(p0, p1, p2);
 }
 
+vec2 readVec2(std::ifstream& ifs)
+{
+    float p0, p1;
+    std::string buffer;
+
+    ifs >> buffer;
+    p0 = std::stof(buffer);
+
+    ifs >> buffer;
+    p1 = std::stof(buffer);
+
+    return vec2(p0, p1);
+}
+
 Object readObject(std::ifstream& ifs, std::unordered_map<std::string, Colour>& colourMap, int& totalVertices, float scaleFactor, vec3 displacement)
 {
     std::string name;
     std::string colour;
+
     std::vector<vec3> vertices;
     std::vector<vec3> vertexNormals;
+    std::vector<vec2> textureCoords;
+
     std::vector<ModelTriangle> triangles;
 
     std::string buffer;
@@ -150,13 +167,19 @@ Object readObject(std::ifstream& ifs, std::unordered_map<std::string, Colour>& c
     ifs >> buffer;
     while (buffer == "v")
     {   
-        vertices.push_back(readVector(ifs) * scaleFactor);
+        vertices.push_back(readVec3(ifs) * scaleFactor);
         ifs >> buffer;
     }
 
     while (buffer == "vn")
     {   
-        vertexNormals.push_back(readVector(ifs) * scaleFactor);
+        vertexNormals.push_back(readVec3(ifs) * scaleFactor);
+        ifs >> buffer;
+    }
+
+    while (buffer == "vt")
+    {
+        textureCoords.push_back(readVec2(ifs));
         ifs >> buffer;
     }
 
@@ -164,20 +187,31 @@ Object readObject(std::ifstream& ifs, std::unordered_map<std::string, Colour>& c
 
     vec3 v0, v1, v2;
     vec3 n0, n1, n2;
+    int t0, t1, t2;
     int f0, f1, f2;
+
+    std::vector<std::string> tokens;
+
     while (buffer == "f")
     {
+        bool hasTexture = false;
         ifs >> buffer;
-        buffer.erase(buffer.size() - 1); // Remove trailing '/'
-        f0 = std::stoi(buffer) - totalVertices - 1;
+        tokens = splitV(buffer, '/');
+        if (tokens[1] != "") hasTexture = true;
+
+
+        f0 = std::stoi(tokens[0]) - totalVertices - 1;
+        if (hasTexture) t0 = std::stoi(tokens[1]) - totalVertices - 1;
 
         ifs >> buffer;
-        buffer.erase(buffer.size() - 1); // Remove trailing '/'
-        f1 = std::stoi(buffer) - totalVertices - 1;
+        tokens = splitV(buffer, '/');
+        f1 = std::stoi(tokens[0]) - totalVertices - 1;
+        if (hasTexture) t1 = std::stoi(tokens[1]) - totalVertices - 1;
 
         ifs >> buffer;
-        buffer.erase(buffer.size() - 1); // Remove trailing '/'
-        f2 = std::stoi(buffer) - totalVertices - 1;
+        tokens = splitV(buffer, '/');
+        f2 = std::stoi(tokens[0]) - totalVertices - 1;
+        if (hasTexture) t2 = std::stoi(tokens[1]) - totalVertices - 1;
 
         v0 = vertices[f0] + displacement;
         v1 = vertices[f1] + displacement;

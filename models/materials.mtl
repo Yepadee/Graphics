@@ -1,1 +1,4 @@
 map_Kd texture.ppm
+
+newmtl White
+Kd 1.000000 1.000000 1.000000
