@@ -75,7 +75,7 @@ float getShadowIntensityVS(const RayTriangleIntersection& rti, const vec3& light
     float shadowIntensity = 0.0f;
 
     float intensityCoeff = 1.0f;
-    float surfaceShift = 0.6f * lightRadius;
+    float surfaceShift = 0.5f * lightRadius;
 
     vec3 surfaceNormal = normalize(rti.normal);
 
@@ -131,7 +131,7 @@ float getShadowIntensityMLP(const RayTriangleIntersection& rti, const vec3& ligh
 {
     float shadowIntensity = 0.0f;
 
-    int numRays = 50;
+    int numRays = (int) (100.0f * lightRadius * lightRadius);
     int numIlluminated = 0;
 
     vec3 lightX;
