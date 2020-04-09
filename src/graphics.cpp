@@ -53,7 +53,7 @@ std::vector<Object> objects = loadOBJ("models/cornell-box.obj", 1.0f, {0.0f, 0.0
 
 
 std::vector<Light> lights = {
-  Light({-0.159877f, 4.71896f, -2.98309f}, 1.0f, 0.8f, 1.0f, 1.0f, 1.0f)
+  Light({-0.159877f, 4.71896f, -2.98309f}, 1.0f, 2.0f, 1.0f, 1.0f, 1.0f)
   //, {0.0f, 2.4f, 1.8f, 150.0f}
 }; 
 
@@ -79,12 +79,22 @@ int main(int argc, char* argv[])
   //objects.push_back(sphere);
   //objects.push_back(hsLogo);
 
-  while(true)
+  bool running = false;
+  while(!running)
   {
     // We MUST poll for events - otherwise the window will freeze !
     if(window.pollForInputEvents(&event)) handleEvent(event);
-    //update();
-    //draw();
+    running = event.type == SDL_MOUSEBUTTONDOWN;
+    // Need to render the frame at the end, or nothing actually gets shown on the screen !
+    window.renderFrame();
+  }
+
+  while(running)
+  {
+    // We MUST poll for events - otherwise the window will freeze !
+    if(window.pollForInputEvents(&event)) handleEvent(event);
+    update();
+    draw();
     // Need to render the frame at the end, or nothing actually gets shown on the screen !
     window.renderFrame();
   }
