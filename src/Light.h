@@ -163,7 +163,7 @@ uint32_t illuminatePoint(RayTriangleIntersection rti, vec3 cameraRay, std::vecto
     float darkness = 1.0f;
     for (Light light: lights)
     {
-        float lightShadowIntensity = getShadowIntensityVS(rti, light.position, light.radius, objects);
+        float lightShadowIntensity = getShadowIntensityMLP(rti, light.position, light.radius, objects);
         darkness = std::min(darkness, lightShadowIntensity);
     }
 

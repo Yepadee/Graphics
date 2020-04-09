@@ -215,7 +215,7 @@ float getShadowIntensityMLP(const RayTriangleIntersection& rti, const vec3& ligh
 {
     float shadowIntensity = 0.0f;
 
-    int numRays = (int) (100.0f * lightRadius * lightRadius);
+    int numRays = (int) (25.0f * lightRadius * lightRadius);
     int numIlluminated = 0;
 
     vec3 lightX;
