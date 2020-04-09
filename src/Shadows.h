@@ -24,7 +24,7 @@ using namespace glm;
  * @param objects A list of all object that may be between the point and the lightPosition.
  * @return Wether or not a point is illuminated by the lightPosition.
  */
-bool isIlluminated(const vec3& triangleIntersectionPoint, int objectId, const vec3& lightPosition, 
+bool isIlluminated(const vec3& triangleIntersectionPoint, int triangleObjectId, const vec3& lightPosition, 
                    const std::vector<Object>& objects)
 {
     vec3 shadowRay =  lightPosition - triangleIntersectionPoint;
@@ -34,10 +34,10 @@ bool isIlluminated(const vec3& triangleIntersectionPoint, int objectId, const ve
 
     for (int i = 0; i < (int) objects.size(); ++i)
     {
+        if (i == triangleObjectId) continue;
         Object object = objects[i];
         for (int j = 0; j < (int) object.triangles.size(); ++j)
         {
-            if (i == objectId) continue;
             ModelTriangle triangle = object.triangles[j];
             vec3 e0 = triangle.vertices[1] - triangle.vertices[0];
             vec3 e1 = triangle.vertices[2] - triangle.vertices[0];
@@ -162,7 +162,6 @@ float getShadowIntensityVS(const RayTriangleIntersection& rti, const vec3& light
     float surfaceShift = 0.5f * lightRadius;
 
     vec3 surfaceNormal = normalize(rti.normal);
-
     vec3 surfaceDisplacement = surfaceShift * surfaceNormal;
 
     vec3 lowSurfacePoint  = rti.intersectionPoint - surfaceDisplacement;
@@ -190,12 +189,7 @@ float getShadowIntensityVS(const RayTriangleIntersection& rti, const vec3& light
             displacement += stepSize;
         }
 
-        
-
         shadowIntensity = intensityCoeff * std::min(1.0f, (displacement - surfaceShift) / lightRadius);
-
-        std::cout << shadowIntensity << std::endl;
-        //if (shadowIntensity < 0.7) std::cout << "TEST" << std::endl;
     }
 
     return shadowIntensity;
