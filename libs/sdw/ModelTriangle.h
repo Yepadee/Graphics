@@ -12,11 +12,13 @@ class ModelTriangle
 {
   public:
     bool hasVertexNormals;
+    bool hasTexture;
+    
     glm::vec3 vertices[3];
     Colour colour;
     glm::vec3 normal;
-
     glm::vec3 vertexNormals[3];
+    glm::vec2 textureVertices[3];
 
     ModelTriangle()
     {
@@ -30,21 +32,24 @@ class ModelTriangle
       colour = trigColour;
       normal = (glm::cross(v1 - v0, v2 - v0));
       hasVertexNormals = false;
+      hasTexture = false;
     }
 
-    ModelTriangle(glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 n0, glm::vec3 n1, glm::vec3 n2, Colour trigColour)
+    void setVertexNormals(glm::vec3 n0, glm::vec3 n1, glm::vec3 n2)
     {
-      vertices[0] = v0;
-      vertices[1] = v1;
-      vertices[2] = v2;
-      colour = trigColour;
-      normal = (glm::cross(v1 - v0, v2 - v0));
       vertexNormals[0] = n0;
       vertexNormals[1] = n1;
       vertexNormals[2] = n2;
       hasVertexNormals = true;
     }
 
+    void setTexturePoints(glm::vec2 t0, glm::vec2 t1, glm::vec2 t2)
+    {
+      textureVertices[0] = t0;
+      textureVertices[1] = t1;
+      textureVertices[2] = t2;
+      hasTexture = true;
+    }
 };
 
 std::ostream& operator<<(std::ostream& os, const ModelTriangle& triangle)

@@ -1,4 +1,3 @@
-map_Kd texture.ppm
-
-newmtl White
+newmtl LogoMat
 Kd 1.000000 1.000000 1.000000
+map_Kd texture.ppm

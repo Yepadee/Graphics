@@ -15,49 +15,23 @@ struct Object
     std::string name;
     std::vector<ModelTriangle> triangles;
 
+    Image texture;
+    bool hasTexture;
+
     Object(std::string name, std::vector<ModelTriangle> triangles)
     : name(name)
     , triangles(triangles)
     {
-        //setVertexNormals();
+        hasTexture = false;
     }
 
-private:
-    void setVertexNormals()
+    Object(std::string name, std::vector<ModelTriangle> triangles, Image texture)
+    : name(name)
+    , triangles(triangles)
+    , texture(texture)
     {
-        for (ModelTriangle& triangle1 : triangles)
-        {
-
-            for (int v = 0; v < 3; v++)
-            {
-                vec3 sumVertexNormal(0.0f, 0.0f, 0.0f);
-                float numVerticies = 0.0f;
-                
-                vec3 vertex = triangle1.vertices[v];
-
-                for (ModelTriangle triangle2 : triangles)
-                {
-                    if (triangleHasVertex(triangle2, vertex))
-                    {
-                        sumVertexNormal += triangle2.normal;
-                        numVerticies ++;
-                    }
-                }
-
-                triangle1.vertexNormals[v] = sumVertexNormal / numVerticies;
-            }
-        }
+        hasTexture = true;
     }
-
-    bool triangleHasVertex(const ModelTriangle& triangle, const vec3& v)
-    {
-        for (int i = 0; i < 3; ++i)
-        {
-            if (triangle.vertices[i] == v) return true;
-        }
-        return false;
-    }
-
 };
 
 std::ostream& operator<<(std::ostream& os, const Object& object)
@@ -131,25 +105,39 @@ std::unordered_map<std::string, Colour> loadColours(const char* filepath)
     return colours;
 }
 
-bool loadTexture(const char* filepath, Image& output)
+Image readImage(std::ifstream& ifs)
 {
-    std::vector<Image> textures;
-    std::ifstream ifs(filepath, std::ifstream::in);
-
     std::string textureFileName;
+    ifs >> textureFileName;
+
+    std::string textureFilepath = "models/";
+    textureFilepath += textureFileName;
+
+    return loadPPM(textureFilepath.c_str());
+}
+
+void loadMaterials(const char* filepath, std::unordered_map<std::string, Colour>& colourMap,
+                                         std::unordered_map<std::string, Image>& textureMap)
+{   
+    std::ifstream ifs(filepath, std::ifstream::in);
     std::string buffer;
     ifs >> buffer;
 
-    if (buffer == "map_Kd")
+    while(buffer == "newmtl" && ifs.good())
     {
-        ifs >> textureFileName;
+        Colour colour = readColour(ifs);
+        colourMap[colour.name] = colour;
+        ifs >> buffer;
 
-        output = loadPPM(textureFileName.c_str());
-
-        return true;
+        if (buffer == "map_Kd")
+        {
+            Image image = readImage(ifs);
+            textureMap[colour.name] = image;
+            ifs >> buffer;
+        }
     }
 
-    return false;
+    ifs.close();
 }
 
 vec3 readVec3(std::ifstream& ifs)
@@ -183,7 +171,7 @@ vec2 readVec2(std::ifstream& ifs)
     return vec2(p0, p1);
 }
 
-Object readObject(std::ifstream& ifs, std::unordered_map<std::string, Colour>& colourMap, int& totalVertices, float scaleFactor, vec3 displacement)
+Object readObject(std::ifstream& ifs, std::unordered_map<std::string, Colour>& colourMap, std::unordered_map<std::string, Image>& textureMap, int& totalVertices, float scaleFactor, vec3 displacement)
 {
     std::string name;
     std::string colour;
@@ -220,65 +208,83 @@ Object readObject(std::ifstream& ifs, std::unordered_map<std::string, Colour>& c
         ifs >> buffer;
     }
 
-    bool hasVertexNormals = vertexNormals.size() > 0;
-
     vec3 v0, v1, v2;
+    vec2 t0, t1, t2;
     vec3 n0, n1, n2;
-    int t0, t1, t2;
-    int f0, f1, f2;
+
+    int fv0, fv1, fv2;
+    int ft0, ft1, ft2;
+    int fn0, fn1, fn2;
 
     std::vector<std::string> tokens;
 
     while (buffer == "f")
     {
         bool hasTexture = false;
+        bool hasNormals = false;
         ifs >> buffer;
         tokens = splitV(buffer, '/');
-        if (tokens[1] != "") hasTexture = true;
+        if (textureMap.size() > 0) hasTexture = true;
+        if (tokens.size() > 2) hasNormals = true;
 
 
-        f0 = std::stoi(tokens[0]) - totalVertices - 1;
-        if (hasTexture) t0 = std::stoi(tokens[1]) - totalVertices - 1;
-
-        ifs >> buffer;
-        tokens = splitV(buffer, '/');
-        f1 = std::stoi(tokens[0]) - totalVertices - 1;
-        if (hasTexture) t1 = std::stoi(tokens[1]) - totalVertices - 1;
+        fv0 = std::stoi(tokens[0]) - totalVertices - 1;
+        if (hasTexture) ft0 = std::stoi(tokens[1]) - totalVertices - 1;
+        if (hasNormals) fn0 = std::stoi(tokens[2]) - totalVertices - 1;
 
         ifs >> buffer;
         tokens = splitV(buffer, '/');
-        f2 = std::stoi(tokens[0]) - totalVertices - 1;
-        if (hasTexture) t2 = std::stoi(tokens[1]) - totalVertices - 1;
+        fv1 = std::stoi(tokens[0]) - totalVertices - 1;
+        if (hasTexture) ft1 = std::stoi(tokens[1]) - totalVertices - 1;
+        if (hasNormals) fn1 = std::stoi(tokens[2]) - totalVertices - 1;
 
-        v0 = vertices[f0] + displacement;
-        v1 = vertices[f1] + displacement;
-        v2 = vertices[f2] + displacement;
+        ifs >> buffer;
+        tokens = splitV(buffer, '/');
+        fv2 = std::stoi(tokens[0]) - totalVertices - 1;
+        if (hasTexture) ft2 = std::stoi(tokens[1]) - totalVertices - 1;
+        if (hasNormals) fn2 = std::stoi(tokens[2]) - totalVertices - 1;
 
-        if (hasVertexNormals)
+        v0 = vertices[fv0] + displacement;
+        v1 = vertices[fv1] + displacement;
+        v2 = vertices[fv2] + displacement;
+
+        ModelTriangle triangle(v0, v1, v2, colourMap[colour]); 
+
+        if (hasNormals)
         {
-            n0 = vertexNormals[f0];
-            n1 = vertexNormals[f1];
-            n2 = vertexNormals[f2];
+            n0 = vertexNormals[fn0];
+            n1 = vertexNormals[fn1];
+            n2 = vertexNormals[fn2];
+            triangle.setVertexNormals(n0, n1, n2);
+        }
 
-            ModelTriangle triangle(v0, v1, v2,
-                                   n0, n1, n2,
-                                   colourMap[colour]);
-            triangles.push_back(triangle);
-        }
-        else
+        if (hasTexture)
         {
-            ModelTriangle triangle(v0, v1, v2,
-                                   colourMap[colour]);
-            triangles.push_back(triangle);
+            
+            t0 = textureCoords[ft0];
+            t1 = textureCoords[ft1];
+            t2 = textureCoords[ft2];
+            triangle.setTexturePoints(t0, t1, t2);
         }
+
+        triangles.push_back(triangle);
 
         ifs >> buffer;
     }
 
     totalVertices += vertices.size();
-    Object object(name, triangles);
 
-    return object;
+    if (textureMap.count(colour))
+    {
+        Image texture = textureMap[colour];
+        Object object(name, triangles, texture);
+        return object;
+    }
+    else
+    {
+        Object object(name, triangles);
+        return object;
+    }
 }
 
 /**
@@ -291,6 +297,8 @@ Object readObject(std::ifstream& ifs, std::unordered_map<std::string, Colour>& c
 std::vector<Object> loadOBJ(const char* filepath, float scaleFactor, vec3 displacement)
 {
     std::unordered_map<std::string, Colour> colourMap;
+    std::unordered_map<std::string, Image> textureMap;
+
     std::vector<Object> objects;
     std::ifstream ifs(filepath, std::ifstream::in);
 
@@ -302,12 +310,13 @@ std::vector<Object> loadOBJ(const char* filepath, float scaleFactor, vec3 displa
     matFilepath = "models/";
     matFilepath += buffer;
 
-    colourMap = loadColours(matFilepath.c_str()); 
+    loadMaterials(matFilepath.c_str(), colourMap, textureMap);
+
     int totalVertices = 0;
     ifs >> buffer;
     while(ifs.good())
     {
-        objects.push_back(readObject(ifs, colourMap, totalVertices, scaleFactor, displacement));
+        objects.push_back(readObject(ifs, colourMap, textureMap, totalVertices, scaleFactor, displacement));
     }
 
     ifs.close();

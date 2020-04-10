@@ -79,6 +79,8 @@ bool getClosestIntersection(const vec3& cameraPosition, const vec3& rayDirection
                 {
                     result.normal = triangle.normal;
                 }
+
+                //Find colour of texture point and use that as the colour.
                 
                 found = true;
             }

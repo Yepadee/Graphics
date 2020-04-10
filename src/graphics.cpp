@@ -47,8 +47,8 @@ float focalLength = WIDTH / 2;
 
 int frameNo = 0;
 
-std::vector<Object> objects = loadOBJ("models/cornell-box.obj", 1.0f, {0.0f, 0.0f, 0.0f});
-//Object sphere = loadOBJ("models/sphere.obj", 0.04f, {-1.5f, 1.5f, 0.0f})[0];
+std::vector<Object> objects;// = loadOBJ("models/cornell-box.obj", 1.0f, {0.0f, 0.0f, 0.0f});
+Object sphere = loadOBJ("models/sphere.obj", 0.04f, {-1.5f, 1.5f, 0.0f})[0];
 //Object hsLogo = loadOBJ("models/logo.obj", 0.008f, {-3.2f, 0.0f, -1.0f})[0];
 
 
@@ -74,10 +74,11 @@ int main(int argc, char* argv[])
   SDL_Event event;
   initDepthBuffer(WIDTH, HEIGHT);
 
+  //objects.push_back(sphere);
+  objects.push_back(sphere);
+
   cameraToWorld = constructCameraSpace(cameraPos, cameraAngle);
   rayTraceObjects(objects, lights, cameraToWorld, focalLength, window, offsets);
-  //objects.push_back(sphere);
-  //objects.push_back(hsLogo);
 
   bool running = false;
   while(!running)
