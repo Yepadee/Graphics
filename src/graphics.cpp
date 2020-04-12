@@ -47,9 +47,9 @@ float focalLength = WIDTH / 2;
 
 int frameNo = 0;
 
-std::vector<Object> objects;// = loadOBJ("models/cornell-box.obj", 1.0f, {0.0f, 0.0f, 0.0f});
-Object sphere = loadOBJ("models/sphere.obj", 0.04f, {-1.5f, 1.5f, 0.0f})[0];
-//Object hsLogo = loadOBJ("models/logo.obj", 0.008f, {-3.2f, 0.0f, -1.0f})[0];
+std::vector<Object> objects = loadOBJ("models/cornell-box.obj", 1.0f, {0.0f, 0.0f, 0.0f});
+//Object sphere = loadOBJ("models/sphere.obj", 0.04f, {-1.5f, 1.5f, 0.0f})[0];
+Object hsLogo = loadOBJ("models/logo.obj", 0.008f, {-3.2f, 0.0f, -1.0f})[0];
 
 
 std::vector<Light> lights = {
@@ -75,7 +75,7 @@ int main(int argc, char* argv[])
   initDepthBuffer(WIDTH, HEIGHT);
 
   //objects.push_back(sphere);
-  objects.push_back(sphere);
+  objects.push_back(hsLogo);
 
   cameraToWorld = constructCameraSpace(cameraPos, cameraAngle);
   rayTraceObjects(objects, lights, cameraToWorld, focalLength, window, offsets);
@@ -176,11 +176,14 @@ void update()
     case 1: // Input Mode
       cameraControls();
       break;
+    case 2:
+      translate(cameraToWorld, {0.0f, 0.0f, -0.2f});
+      break;
   }
 
   if(keyPressed(SDL_SCANCODE_P)) drawMode = (drawMode + 1) % 3;
   if(keyPressed(SDL_SCANCODE_O)) drawMode = drawMode > 0 ? drawMode - 1 : 0;
-  if(keyPressed(SDL_SCANCODE_C)) movementMode = (movementMode + 1) % 2;
+  if(keyPressed(SDL_SCANCODE_C)) movementMode = (movementMode + 1) % 3;
 
 }
 
