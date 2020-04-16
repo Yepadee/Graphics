@@ -178,7 +178,7 @@ uint32_t illuminatePoint(RayTriangleIntersection rti, vec3 cameraRay, std::vecto
     gl *= brightness;
     bl *= brightness;
 
-    uint32_t colour = applyBrightness(rti.intersectedTriangle.colour, rl, gl, bl);
+    uint32_t colour = applyBrightness(rti.colour, rl, gl, bl);
 
     return colour;
 }

@@ -13,6 +13,8 @@ class RayTriangleIntersection
     int objectId;
     int triangleId;
 
+    Colour colour;
+
     RayTriangleIntersection()
     {
     }

@@ -80,6 +80,25 @@ bool getClosestIntersection(const vec3& cameraPosition, const vec3& rayDirection
                     result.normal = triangle.normal;
                 }
 
+                if (triangle.hasTexture)
+                {
+                    vec2 t0 = triangle.textureVertices[0];
+                    vec2 t1 = triangle.textureVertices[1];
+                    vec2 t2 = triangle.textureVertices[2];
+                    vec2 texturePoint = u * t1 + v * t2 + (1 - u - v) * t0;
+                    uint32_t textureColour = object.texture.GetPixel(texturePoint.x * object.texture.getWidth(), texturePoint.y * object.texture.getHeight());
+                    int r = getSubPixel(textureColour, 2);
+                    int g = getSubPixel(textureColour, 1);
+                    int b = getSubPixel(textureColour, 0);
+                    Colour colour(r, g, b);
+
+                    result.colour = colour;
+                }
+                else
+                {
+                    result.colour = triangle.colour;
+                }
+
                 //Find colour of texture point and use that as the colour.
                 
                 found = true;

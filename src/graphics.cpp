@@ -48,7 +48,7 @@ float focalLength = WIDTH / 2;
 int frameNo = 0;
 
 std::vector<Object> objects = loadOBJ("models/cornell-box.obj", 1.0f, {0.0f, 0.0f, 0.0f});
-//Object sphere = loadOBJ("models/sphere.obj", 0.04f, {-1.5f, 1.5f, 0.0f})[0];
+Object sphere = loadOBJ("models/sphere.obj", 0.04f, {-1.5f, 1.5f, 0.0f})[0];
 Object hsLogo = loadOBJ("models/logo.obj", 0.008f, {-3.2f, 0.0f, -1.0f})[0];
 
 
