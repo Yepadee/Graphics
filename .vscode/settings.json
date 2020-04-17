@@ -49,6 +49,19 @@
         "codecvt": "cpp",
         "filesystem": "cpp",
         "ratio": "cpp",
-        "set": "cpp"
+        "set": "cpp",
+        "csignal": "cpp",
+        "strstream": "cpp",
+        "bitset": "cpp",
+        "complex": "cpp",
+        "condition_variable": "cpp",
+        "list": "cpp",
+        "map": "cpp",
+        "numeric": "cpp",
+        "mutex": "cpp",
+        "thread": "cpp",
+        "cfenv": "cpp",
+        "typeindex": "cpp",
+        "valarray": "cpp"
     }
 }

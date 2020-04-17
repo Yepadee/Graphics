@@ -37,7 +37,7 @@ struct Light
  * @param lightSource The location and brightness of the light.
  * @return Brightness of point.
  */
-float applyProximityLight(RayTriangleIntersection rti, Light light)
+float applyProximityLight(const RayTriangleIntersection& rti, const Light& light)
 {   
     glm::vec3 diff = rti.intersectionPoint - light.position;
     float distSqr = dot(diff, diff);
@@ -52,7 +52,7 @@ float applyProximityLight(RayTriangleIntersection rti, Light light)
  * @param lightSource The location and brightness of the light.
  * @return Brightness of point.
  */
-float applyAOILight(RayTriangleIntersection rti, Light light)
+float applyAOILight(const RayTriangleIntersection& rti, const Light& light)
 {
     vec3 normal = rti.normal;
     
@@ -70,7 +70,7 @@ float applyAOILight(RayTriangleIntersection rti, Light light)
  * @param lightSource The location and brightness of the light.
  * @return Brightness of point.
  */
-float applyDiffuse(RayTriangleIntersection rti, Light light)
+float applyDiffuse(const RayTriangleIntersection& rti, const Light& light)
 {
     return applyAOILight(rti, light) * applyProximityLight(rti, light);
 }
@@ -87,7 +87,7 @@ vec3 reflectRay(const vec3 &ray, const vec3 &normal)
  * @param lightSource The location and brightness of the light.
  * @return Brightness of point.
  */
-float applySpecularLight(RayTriangleIntersection rti, Light light, vec3 cameraRay)
+float applySpecularLight(const RayTriangleIntersection& rti, const Light& light, const vec3& cameraRay)
 {
     float n = 10.0f;
 
@@ -118,12 +118,12 @@ float applyAmbiantLight(float brightness, float ambiance)
  * @param brightness The brightness of the point.
  * @return Colour of points under light.
  */
-uint32_t applyBrightness(Colour colour, float rl, float gl, float bl)
+vec3 applyBrightness(const Colour& colour, float rl, float gl, float bl)
 {
     float r = colour.red * rl;
     float g = colour.green * gl;
     float b = colour.blue * bl;
-    return packRGB(r,g,b);
+    return vec3(r,g,b);
 }
 
 /**
@@ -133,7 +133,7 @@ uint32_t applyBrightness(Colour colour, float rl, float gl, float bl)
  * @param lights The locations and brightnesses of the light sources.
  * @return The illumnated point colour.
  */
-uint32_t illuminatePoint(RayTriangleIntersection rti, vec3 cameraRay, std::vector<Object> objects, std::vector<Light> lights)
+vec3 illuminatePoint(const RayTriangleIntersection& rti, const vec3& cameraRay, const std::vector<Object>& objects, const std::vector<Light>& lights)
 {
     float ambiance = 0.2f;
     float brightness = 0.0f;
@@ -160,15 +160,15 @@ uint32_t illuminatePoint(RayTriangleIntersection rti, vec3 cameraRay, std::vecto
 
 
     // Find darkness of the point
-    float darkness = 1.0f;
-    for (Light light: lights)
-    {
-        float lightShadowIntensity = getShadowIntensityVS(rti, light.position, light.radius, objects);
-        darkness = std::min(darkness, lightShadowIntensity);
-    }
+    // float darkness = 1.0f;
+    // for (Light light: lights)
+    // {
+    //     float lightShadowIntensity = getShadowIntensityVS(rti, light.position, light.radius, objects);
+    //     darkness = std::min(darkness, lightShadowIntensity);
+    // }
 
-    // Apply darkness
-    brightness *= (1.0f - darkness);
+    // // Apply darkness
+    // brightness *= (1.0f - darkness);
 
     // Apply ambiant light
     brightness = applyAmbiantLight(brightness, ambiance);
@@ -178,7 +178,59 @@ uint32_t illuminatePoint(RayTriangleIntersection rti, vec3 cameraRay, std::vecto
     gl *= brightness;
     bl *= brightness;
 
-    uint32_t colour = applyBrightness(rti.colour, rl, gl, bl);
+    vec3 colour = applyBrightness(rti.colour, rl, gl, bl);
 
     return colour;
+}
+
+float getOcclusionValue(const vec3& triangleIntersectionPoint, const vec3& lightPosition, float lightRadius, const std::vector<Object>& objects)
+{
+    vec3 shadowRay =  lightPosition - triangleIntersectionPoint;
+    float rayLength = length(shadowRay);
+
+    float minDistance = 0.001f;
+
+    float minOcclusionDistance = std::numeric_limits<float>::infinity();
+
+    for (int i = 0; i < (int) objects.size(); ++i)
+    {
+        Object object = objects[i];
+        for (int j = 0; j < (int) object.triangles.size(); ++j)
+        {
+            ModelTriangle triangle = object.triangles[j];
+            vec3 e0 = triangle.vertices[1] - triangle.vertices[0];
+            vec3 e1 = triangle.vertices[2] - triangle.vertices[0];
+            vec3 SPVector = triangleIntersectionPoint - triangle.vertices[0];
+            mat3 DEMatrix(-normalize(shadowRay), e0, e1);
+            vec3 possibleSolution = glm::inverse(DEMatrix) * SPVector;
+
+            float t = possibleSolution.x;
+            float u = possibleSolution.y;
+            float v = possibleSolution.z;
+
+            if (u >= 0.0f && u <= 1.0f &&
+                v >= 0.0f && v <= 1.0f &&
+                u + v     <=      1.0f &&  
+                abs(t)    <  rayLength &&
+                t         >  minDistance)
+            {
+               if (t < minOcclusionDistance) minOcclusionDistance = t;
+            }
+        }
+    }
+
+    return minOcclusionDistance / rayLength;
+}
+
+float getReducedOcclusionValue(const vec3& triangleIntersectionPoint, const std::vector<Light>& lights, const std::vector<Object>& objects)
+{
+    float occlusionValue = 1.0f;
+
+    for (Light light : lights)
+    {
+        float lightOcclusionValue = getOcclusionValue(triangleIntersectionPoint, light.position, light.radius, objects);
+        occlusionValue = min(occlusionValue, lightOcclusionValue);
+    }
+
+    return occlusionValue;
 }

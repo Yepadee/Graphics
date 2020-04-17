@@ -171,7 +171,10 @@ void rayTraceObjects(const std::vector<Object>& objects, const std::vector<Light
     vec3 rayCameraSpace;
     RayTriangleIntersection rti;
 
+    vec3* colourBuffer = new vec3[window.width * window.height * numAAOffsets];
     uint32_t* screenBuffer = new uint32_t[window.width * window.height * numAAOffsets];
+    float* occlusionBuffer = new float[window.width * window.height * numAAOffsets];
+    float* depthBuffer = new float[window.width * window.height * numAAOffsets];
 
     for (int j = 0; j < window.height; ++j)
     {
@@ -188,15 +191,27 @@ void rayTraceObjects(const std::vector<Object>& objects, const std::vector<Light
 
                 if (getClosestIntersection(cameraPos, rayWorldSpace, objects, rti))
                 {
-                    screenBuffer[k + i * numAAOffsets + j * window.width * numAAOffsets] = illuminatePoint(rti, rayWorldSpace, objects, lights);
+                    occlusionBuffer[k + i * numAAOffsets + j * window.width * numAAOffsets] = getReducedOcclusionValue(rti.intersectionPoint, lights, objects);
+                    colourBuffer[k + i * numAAOffsets + j * window.width * numAAOffsets] = illuminatePoint(rti, rayWorldSpace, objects, lights);
+                    depthBuffer[k + i * numAAOffsets + j * window.width * numAAOffsets] = rti.intersectionPoint.z;
+                    
+                    if (occlusionBuffer[k + i * numAAOffsets + j * window.width * numAAOffsets] < 1.0f)
+                    {
+                        colourBuffer[k + i * numAAOffsets + j * window.width * numAAOffsets] *= 0.4f;
+                    }
                 }
                 else
                 {
-                    screenBuffer[k + i * numAAOffsets + j * window.width * numAAOffsets] = 0;
+                    occlusionBuffer[k + i * numAAOffsets + j * window.width * numAAOffsets] = 1.0f;
+                    colourBuffer[k + i * numAAOffsets + j * window.width * numAAOffsets] = vec3(0.0f,0.0f,0.0f);        
                 }
+
+                screenBuffer[k + i * numAAOffsets + j * window.width * numAAOffsets] = packRGB(colourBuffer[k + i * numAAOffsets + j * window.width * numAAOffsets]);
             }
         }
     }
+
+    
 
     drawScreenBuffer(window, aaOffsets, screenBuffer);
 }

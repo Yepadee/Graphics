@@ -15,7 +15,6 @@
 
 using namespace glm;
 
-
 /**
  * Determine if a point is illuminated by a light source.
  *
@@ -231,4 +230,9 @@ float getShadowIntensityMLP(const RayTriangleIntersection& rti, const vec3& ligh
     shadowIntensity = (float) (numRays - numIlluminated) / (float) numRays;      
 
     return shadowIntensity;
+}
+
+float getShadowStrength(vec3* colourBuffer, float* occlusionBuffer, float* depthBuffer, int canvasPos)
+{
+    
 }
