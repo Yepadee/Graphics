@@ -90,8 +90,8 @@ bool getClosestIntersection(const vec3& cameraPosition, const vec3& rayDirection
                     vec3 v1 = triangle.vertices[1];
                     vec3 v2 = triangle.vertices[2];
 
-                    vec2 texturePointInv = u * t1 / v1.z + v * t2 / v2.z + (1 - u - v) * t0 / v0.z;
-                    float pointZ = u * v1.z + v * v2.z + (1 - u - v) * v0.z;
+                    //vec2 texturePointInv = u * t1 / v1.z + v * t2 / v2.z + (1 - u - v) * t0 / v0.z;
+                    //float pointZ = u * v1.z + v * v2.z + (1 - u - v) * v0.z;
                     
                     vec2 texturePoint = u * t1 + v * t2 + (1 - u - v) * t0;
 

@@ -52,52 +52,63 @@ int readNumber(FILE *fptr)
  */
 Image loadPPM(const char* fileName)
 {
+  FILE *fptr;
+  int retval;
+
   Image image;
   int imageSize;
 
-  std::ifstream ifs(fileName, std::ifstream::in);
-
-  std::string matFilepath;
-  std::string buffer;
+  if ((fptr = fopen(fileName,"r")) == NULL){
+      printf("Error! opening file");
+      exit(1);
+  }
 
   // Read magic no.
-  ifs >> buffer;
+  retval = fscanf(fptr, "%*[^\n]\n");
 
-  //Check for comment
-  ifs >> buffer;
-  if (buffer[0] == '#') std::getline(ifs, buffer);
+  //printf("str: %s\n", buf);
 
-  // Read width
-  ifs >> buffer;
-  int width = std::stoi(buffer);
+  // Read Space
+  retval = fscanf(fptr, " ");
 
-  // Read width
-  ifs >> buffer;
-  int height = std::stoi(buffer);
-
-  ifs >> buffer;
+  // Read comment
+  char c = (char) getc(fptr);
+  if (c == '#') retval = fscanf(fptr, "%*[^\n]\n");
+  else retval = fseek(fptr, -1L, SEEK_CUR); // move backwards one character
 
   // Read width
-  int maxval = std::stoi(buffer);
+  int width = readNumber(fptr);
+
+  // Whitespace
+  retval = fscanf(fptr, " ");
+
+  // Read width
+  int height = readNumber(fptr);
+
+  // Whitespace
+  retval = fscanf(fptr, " ");
+
+  // Read width
+  int maxval = readNumber(fptr);
+
+  if (retval) exit(EXIT_FAILURE);
+  if (!maxval) exit(EXIT_FAILURE);
 
   // Copy payload
   imageSize = width * height;
   uint32_t* payload = (uint32_t*) malloc(imageSize * sizeof(uint32_t));
 
- 
-  char* pixelBuffer = new char [imageSize * 3];
-  ifs.read(pixelBuffer, imageSize * 3);
   for (int i = 0; i < imageSize; ++i)
-  { 
-    unsigned char r = pixelBuffer[3 * i + 0];
-    unsigned char g = pixelBuffer[3 * i + 1];
-    unsigned char b = pixelBuffer[3 * i + 2];
+  {
+    int r = (int) getc(fptr);
+    int g = (int) getc(fptr);
+    int b = (int) getc(fptr);
 
-    uint32_t colour = packRGBC(r,g,b); 
+    uint32_t colour = packRGB(r,g,b); 
     payload[i] = colour;
   }
 
-  ifs.close();
+  fclose(fptr);
 
   return Image(width, height, payload);
 }
