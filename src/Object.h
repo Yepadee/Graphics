@@ -171,7 +171,7 @@ vec2 readVec2(std::ifstream& ifs)
     return vec2(p0, p1);
 }
 
-Object readObject(std::ifstream& ifs, std::unordered_map<std::string, Colour>& colourMap, std::unordered_map<std::string, Image>& textureMap, int& totalVertices, float scaleFactor, vec3 displacement)
+Object readObject(std::ifstream& ifs, std::unordered_map<std::string, Colour>& colourMap, std::unordered_map<std::string, Image>& textureMap, int& totalVertices, int& totalTextureVertices, float scaleFactor, vec3 displacement)
 {
     std::string name;
     std::string colour;
@@ -224,24 +224,24 @@ Object readObject(std::ifstream& ifs, std::unordered_map<std::string, Colour>& c
         bool hasNormals = false;
         ifs >> buffer;
         tokens = splitV(buffer, '/');
-        if (textureMap.size() > 0) hasTexture = true;
+        if (tokens.size() > 1 && textureMap.size() > 0) hasTexture = tokens[1] != "";
         if (tokens.size() > 2) hasNormals = true;
 
 
         fv0 = std::stoi(tokens[0]) - totalVertices - 1;
-        if (hasTexture) ft0 = std::stoi(tokens[1]) - totalVertices - 1;
+        if (hasTexture) ft0 = std::stoi(tokens[1]) - totalTextureVertices - 1;
         if (hasNormals) fn0 = std::stoi(tokens[2]) - totalVertices - 1;
 
         ifs >> buffer;
         tokens = splitV(buffer, '/');
         fv1 = std::stoi(tokens[0]) - totalVertices - 1;
-        if (hasTexture) ft1 = std::stoi(tokens[1]) - totalVertices - 1;
+        if (hasTexture) ft1 = std::stoi(tokens[1]) - totalTextureVertices - 1;
         if (hasNormals) fn1 = std::stoi(tokens[2]) - totalVertices - 1;
 
         ifs >> buffer;
         tokens = splitV(buffer, '/');
         fv2 = std::stoi(tokens[0]) - totalVertices - 1;
-        if (hasTexture) ft2 = std::stoi(tokens[1]) - totalVertices - 1;
+        if (hasTexture) ft2 = std::stoi(tokens[1]) - totalTextureVertices - 1;
         if (hasNormals) fn2 = std::stoi(tokens[2]) - totalVertices - 1;
 
         v0 = vertices[fv0] + displacement;
@@ -273,6 +273,7 @@ Object readObject(std::ifstream& ifs, std::unordered_map<std::string, Colour>& c
     }
 
     totalVertices += vertices.size();
+    totalTextureVertices += textureCoords.size();
 
     if (textureMap.count(colour))
     {
@@ -313,10 +314,11 @@ std::vector<Object> loadOBJ(const char* filepath, float scaleFactor, vec3 displa
     loadMaterials(matFilepath.c_str(), colourMap, textureMap);
 
     int totalVertices = 0;
+    int totalTextureVertices = 0;
     ifs >> buffer;
     while(ifs.good())
     {
-        objects.push_back(readObject(ifs, colourMap, textureMap, totalVertices, scaleFactor, displacement));
+        objects.push_back(readObject(ifs, colourMap, textureMap, totalVertices, totalTextureVertices, scaleFactor, displacement));
     }
 
     ifs.close();

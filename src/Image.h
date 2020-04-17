@@ -1,6 +1,8 @@
 #pragma once
 
 #include <fstream>
+#include <sstream>
+
 #include "PixelUtil.h"
 
 class Image
@@ -50,62 +52,52 @@ int readNumber(FILE *fptr)
  */
 Image loadPPM(const char* fileName)
 {
-  FILE *fptr;
-  int retval;
-
   Image image;
   int imageSize;
 
-  if ((fptr = fopen(fileName,"r")) == NULL){
-      printf("Error! opening file");
-      exit(1);
-  }
+  std::ifstream ifs(fileName, std::ifstream::in);
+
+  std::string matFilepath;
+  std::string buffer;
 
   // Read magic no.
-  retval = fscanf(fptr, "%*[^\n]\n");
+  ifs >> buffer;
 
-  //printf("str: %s\n", buf);
-
-  // Read Space
-  retval = fscanf(fptr, " ");
-
-  // Read comment
-  char c = (char) getc(fptr);
-  if (c == '#') retval = fscanf(fptr, "%*[^\n]\n");
+  //Check for comment
+  ifs >> buffer;
+  if (buffer[0] == '#') std::getline(ifs, buffer);
 
   // Read width
-  int width = readNumber(fptr);
-
-  // Whitespace
-  retval = fscanf(fptr, " ");
+  ifs >> buffer;
+  int width = std::stoi(buffer);
 
   // Read width
-  int height = readNumber(fptr);
+  ifs >> buffer;
+  int height = std::stoi(buffer);
 
-  // Whitespace
-  retval = fscanf(fptr, " ");
+  ifs >> buffer;
 
   // Read width
-  int maxval = readNumber(fptr);
-
-  if (retval) exit(EXIT_FAILURE);
-  if (!maxval) exit(EXIT_FAILURE);
+  int maxval = std::stoi(buffer);
 
   // Copy payload
   imageSize = width * height;
   uint32_t* payload = (uint32_t*) malloc(imageSize * sizeof(uint32_t));
 
+ 
+  char* pixelBuffer = new char [imageSize * 3];
+  ifs.read(pixelBuffer, imageSize * 3);
   for (int i = 0; i < imageSize; ++i)
-  {
-    int r = (int) getc(fptr);
-    int g = (int) getc(fptr);
-    int b = (int) getc(fptr);
+  { 
+    unsigned char r = pixelBuffer[3 * i + 0];
+    unsigned char g = pixelBuffer[3 * i + 1];
+    unsigned char b = pixelBuffer[3 * i + 2];
 
-    uint32_t colour = packRGB(r,g,b); 
+    uint32_t colour = packRGBC(r,g,b); 
     payload[i] = colour;
   }
 
-  fclose(fptr);
+  ifs.close();
 
   return Image(width, height, payload);
 }
