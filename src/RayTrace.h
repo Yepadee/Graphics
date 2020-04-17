@@ -118,7 +118,36 @@ bool getClosestIntersection(const vec3& cameraPosition, const vec3& rayDirection
     return found;
 }
 
+void drawScreenBuffer(DrawingWindow& window, std::vector<vec3> aaOffsets, uint32_t* screenBuffer)
+{
+    int numAAOffsets = aaOffsets.size();
 
+    for (int j = 0; j < window.height; ++j)
+    {
+        for (int i = 0; i < window.width; ++i)
+        {
+            float sumRed = 0;
+            float sumGreen = 0;
+            float sumBlue = 0;
+            float sumWeights = 0.0f;
+
+            for (int k = 0; k < numAAOffsets; ++k)
+            {
+                vec3 offset = aaOffsets[k];
+
+                uint32_t colour = screenBuffer[k + i * numAAOffsets + j * window.width * numAAOffsets];
+
+                sumRed += offset.z * ((colour & (255 << 16)) >> 16);
+                sumGreen += offset.z * ((colour & (255 << 8)) >> 8);
+                sumBlue += offset.z * (colour & (255));
+                sumWeights += offset.z;
+            }
+
+            uint32_t aaColour = packRGB(sumRed / sumWeights, sumGreen / sumWeights, sumBlue / sumWeights);
+            window.setPixelColour(i, j, aaColour);
+        }
+    }
+}
 
 /**
  * Render objects in scene to window via ray-tracing.
@@ -136,20 +165,21 @@ void rayTraceObjects(const std::vector<Object>& objects, const std::vector<Light
     std::cout << cameraPos << std::endl;
     std::cout << cameraSpace << std::endl;
     
+    int numAAOffsets = aaOffsets.size();
+
     vec3 rayWorldSpace;
     vec3 rayCameraSpace;
     RayTriangleIntersection rti;
+
+    uint32_t* screenBuffer = new uint32_t[window.width * window.height * numAAOffsets];
+
     for (int j = 0; j < window.height; ++j)
     {
         for (int i = 0; i < window.width; ++i)
         {
-            float sumRed = 0;
-            float sumGreen = 0;
-            float sumBlue = 0;
-            float sumWeights = 0.0f;
-
-            for (vec3 offset : aaOffsets)
+            for (int k = 0; k < numAAOffsets; ++k)
             {
+                vec3 offset = aaOffsets[k];
                 rayCameraSpace.x = i - window.width / 2.0f + offset.x;
                 rayCameraSpace.y = window.height / 2.0f - j + offset.y;
                 rayCameraSpace.z = -focalLength;
@@ -158,19 +188,17 @@ void rayTraceObjects(const std::vector<Object>& objects, const std::vector<Light
 
                 if (getClosestIntersection(cameraPos, rayWorldSpace, objects, rti))
                 {
-                    uint32_t colour = illuminatePoint(rti, rayWorldSpace, objects, lights);
-                    
-                    sumRed += offset.z * ((colour & (255 << 16)) >> 16);
-                    sumGreen += offset.z * ((colour & (255 << 8)) >> 8);
-                    sumBlue += offset.z * (colour & (255));
+                    screenBuffer[k + i * numAAOffsets + j * window.width * numAAOffsets] = illuminatePoint(rti, rayWorldSpace, objects, lights);
                 }
-
-                sumWeights += offset.z;
+                else
+                {
+                    screenBuffer[k + i * numAAOffsets + j * window.width * numAAOffsets] = 0;
+                }
             }
-            uint32_t aaColour = packRGB(sumRed / sumWeights, sumGreen / sumWeights, sumBlue / sumWeights);
-            window.setPixelColour(i, j, aaColour);
         }
     }
+
+    drawScreenBuffer(window, aaOffsets, screenBuffer);
 }
 
 
