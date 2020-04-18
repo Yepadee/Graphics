@@ -12,7 +12,7 @@
 
 #include "Object.h"
 #include "Camera.h"
-#include "Light.h"
+#include "Shadows.h"
 
 
 using namespace glm;

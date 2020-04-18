@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "PixelUtil.h"
-#include "Shadows.h"
 
 using namespace glm;
 
@@ -165,76 +164,4 @@ vec3 getPointBrightess(const RayTriangleIntersection& rti, const vec3& cameraRay
     bl *= brightness;
 
     return vec3(rl, gl, bl);
-}
-
-vec3 getShadowRay(const vec3& lightPosition, const vec3& triangleIntersectionPoint)
-{
-    return lightPosition - triangleIntersectionPoint;
-}
-
-float getLightDirection(const vec3& surfaceNormal, const vec3& shadowRay)
-{
-    return dot(normalize(shadowRay), surfaceNormal);
-}
-
-float getOcclusionValue(const vec3& triangleIntersectionPoint, const vec3& shadowRay, float lightRadius, const std::vector<Object>& objects)
-{
-    float rayLength = length(shadowRay);
-
-    float minDistance = 0.001f;
-
-    float minOcclusionDistance = rayLength;
-
-    for (int i = 0; i < (int) objects.size(); ++i)
-    {
-        Object object = objects[i];
-        for (int j = 0; j < (int) object.triangles.size(); ++j)
-        {
-            ModelTriangle triangle = object.triangles[j];
-            vec3 e0 = triangle.vertices[1] - triangle.vertices[0];
-            vec3 e1 = triangle.vertices[2] - triangle.vertices[0];
-            vec3 SPVector = triangleIntersectionPoint - triangle.vertices[0];
-            mat3 DEMatrix(-normalize(shadowRay), e0, e1);
-            vec3 possibleSolution = glm::inverse(DEMatrix) * SPVector;
-
-            float t = possibleSolution.x;
-            float u = possibleSolution.y;
-            float v = possibleSolution.z;
-
-            if (u >= 0.0f && u <= 1.0f &&
-                v >= 0.0f && v <= 1.0f &&
-                u + v     <=      1.0f &&  
-                abs(t)    <  rayLength &&
-                t         >  minDistance)
-            {
-               if (t < minOcclusionDistance) minOcclusionDistance = t;
-            }
-        }
-    }
-
-    return minOcclusionDistance / rayLength;
-}
-
-void getShadowData(const vec3& triangleIntersectionPoint, const vec3& surfaceNormal, const std::vector<Light>& lights, const std::vector<Object>& objects,
-                   float& occlusionValueResult, float& occlusionRadiusResult, float& lightDirectionResult)
-{
-    float occlusionValue = 1.0f;
-    float occlusionLightRadius = 0.0f;
-    float lightDirection = 1.0f;
-    for (Light light : lights)
-    {
-        vec3 shadowRay = getShadowRay(light.position, triangleIntersectionPoint);
-        float checkOcclusionValue = getOcclusionValue(triangleIntersectionPoint, shadowRay, light.radius, objects);
-        float checklightDirection = getLightDirection(surfaceNormal, shadowRay);
-        if (checkOcclusionValue < occlusionValue)
-        {
-            occlusionValue = checkOcclusionValue;
-            occlusionLightRadius = light.radius;
-            lightDirection = checklightDirection;
-        }
-    }
-
-    occlusionValueResult = occlusionValue;
-    occlusionRadiusResult = 10.0f * occlusionLightRadius;
-    lightDirectionResult = lightDirection;
 }
