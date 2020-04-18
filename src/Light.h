@@ -142,7 +142,6 @@ vec3 getPointBrightess(const RayTriangleIntersection& rti, const vec3& cameraRay
     float gl = 0.0f;
     float bl = 0.0f;
 
-
     // Find brightness of the point
     for (Light light : lights)
     {
@@ -158,21 +157,8 @@ vec3 getPointBrightess(const RayTriangleIntersection& rti, const vec3& cameraRay
     gl = min(1.0f, gl);
     bl = min(1.0f, bl);
 
-
-    // Find darkness of the point
-    // float darkness = 1.0f;
-    // for (Light light: lights)
-    // {
-    //     float lightShadowIntensity = getShadowIntensityVS(rti, light.position, light.radius, objects);
-    //     darkness = std::min(darkness, lightShadowIntensity);
-    // }
-
-    // // Apply darkness
-    // brightness *= (1.0f - darkness);
-
     // Apply ambiant light
     brightness = applyAmbiantLight(brightness, ambiance);
-
 
     rl *= brightness;
     gl *= brightness;
