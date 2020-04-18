@@ -184,7 +184,7 @@ void rayTraceObjects(const std::vector<Object>& objects, const std::vector<Light
     float* occlusionBuffer = new float[window.width * window.height * numAAOffsets];
     float* depthBuffer = new float[window.width * window.height * numAAOffsets];
     float* lightSizeBuffer = new float[window.width * window.height * numAAOffsets];
-    float* lightAngleBuffer = new float[window.width * window.height * numAAOffsets];
+    float* lightDirectionBuffer = new float[window.width * window.height * numAAOffsets];
 
     for (int j = 0; j < window.height; ++j)
     {
@@ -211,7 +211,7 @@ void rayTraceObjects(const std::vector<Object>& objects, const std::vector<Light
                             rti.intersectionPoint, rti.normal, lights, objects,
                             occlusionBuffer[bufferPos],
                             lightSizeBuffer[bufferPos],
-                            lightAngleBuffer[bufferPos]
+                            lightDirectionBuffer[bufferPos]
                         );
 
                         colourBuffer[bufferPos] = vec3(rti.colour.red, rti.colour.green, rti.colour.blue);
@@ -236,9 +236,9 @@ void rayTraceObjects(const std::vector<Object>& objects, const std::vector<Light
             vec3 brightness = brightnessBuffer[bufferPos];
 
             float lightSize = lightSizeBuffer[bufferPos];
-            float lightAngle = lightAngleBuffer[bufferPos];
+            float lightDirection = lightDirectionBuffer[bufferPos];
 
-            float shadowStrength = getShadowStrength(occlusionBuffer, depthBuffer, lightSize, lightAngle, canvasX, canvasY, canvasNX, canvasNY);
+            float shadowStrength = getShadowStrength(occlusionBuffer, depthBuffer, lightSize, lightDirection, canvasX, canvasY, canvasNX, canvasNY);
             float shadowBrightness = std::max(0.2f, (1.0f - shadowStrength));
             screenBuffer[bufferPos] = packRGB(colour * brightness * shadowBrightness);
         }
