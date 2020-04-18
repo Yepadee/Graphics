@@ -171,6 +171,9 @@ void rayTraceObjects(const std::vector<Object>& objects, const std::vector<Light
     
     int numAAOffsets = aaOffsetNX * aaOffsetNY;
 
+    int canvasNX = aaOffsetNX * window.width;
+    int canvasNY = aaOffsetNY * window.height;
+
     vec3 rayWorldSpace;
     vec3 rayCameraSpace;
     RayTriangleIntersection rti;
@@ -181,6 +184,7 @@ void rayTraceObjects(const std::vector<Object>& objects, const std::vector<Light
     float* occlusionBuffer = new float[window.width * window.height * numAAOffsets];
     float* depthBuffer = new float[window.width * window.height * numAAOffsets];
     float* lightSizeBuffer = new float[window.width * window.height * numAAOffsets];
+    float* lightAngleBuffer = new float[window.width * window.height * numAAOffsets];
 
     for (int j = 0; j < window.height; ++j)
     {
@@ -204,35 +208,41 @@ void rayTraceObjects(const std::vector<Object>& objects, const std::vector<Light
                         depthBuffer[bufferPos] = rti.intersectionPoint.z;
 
                         getReducedOcclusionValue(
-                            rti.intersectionPoint, lights, objects,
+                            rti.intersectionPoint, rti.normal, lights, objects,
                             occlusionBuffer[bufferPos],
-                            lightSizeBuffer[bufferPos]
+                            lightSizeBuffer[bufferPos],
+                            lightAngleBuffer[bufferPos]
                         );
 
                         colourBuffer[bufferPos] = vec3(rti.colour.red, rti.colour.green, rti.colour.blue);
                         brightnessBuffer[bufferPos] = getPointBrightess(rti, rayWorldSpace, objects, lights);
-
-                        
-                        
-                        if (occlusionBuffer[bufferPos] < 1.0f)
-                        {
-                            brightnessBuffer[bufferPos] = vec3(0.2f);
-                        }
                     }
                     else
                     {
                         occlusionBuffer[bufferPos] = 1.0f;
                         colourBuffer[bufferPos] = vec3(0.0f);
                     }
-
-                    screenBuffer[bufferPos] = packRGB(colourBuffer[bufferPos] * brightnessBuffer[bufferPos]);
                 }
             }
         }
-
     }
 
-    
+    for (int canvasY = 0; canvasY < canvasNY; ++canvasY)
+    {
+        for (int canvasX = 0; canvasX < canvasNX; ++canvasX)
+        {
+            int bufferPos = canvasX + canvasY * canvasNX;
+            vec3 colour = colourBuffer[bufferPos];
+            vec3 brightness = brightnessBuffer[bufferPos];
+
+            float lightSize = lightSizeBuffer[bufferPos];
+
+            float shadowStrength = getShadowStrength(occlusionBuffer, depthBuffer, lightSize, canvasX, canvasY, canvasNX, canvasNY);
+            
+            float shadowBrightness = std::max(0.2f, (1.0f - shadowStrength));
+            screenBuffer[bufferPos] = packRGB(colour * brightness * shadowBrightness);
+        }
+    }
 
     drawScreenBuffer(window, aaOffsets, aaOffsetNX, aaOffsetNY, screenBuffer);
 }

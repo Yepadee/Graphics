@@ -181,14 +181,15 @@ vec3 getPointBrightess(const RayTriangleIntersection& rti, const vec3& cameraRay
     return vec3(rl, gl, bl);
 }
 
-float getOcclusionValue(const vec3& triangleIntersectionPoint, const vec3& lightPosition, float lightRadius, const std::vector<Object>& objects)
+void getOcclusionValue(const vec3& triangleIntersectionPoint, const vec3& surfaceNormal, const vec3& lightPosition, float lightRadius, const std::vector<Object>& objects,
+                       float& occlusionValue, float& lightAngle)
 {
     vec3 shadowRay =  lightPosition - triangleIntersectionPoint;
     float rayLength = length(shadowRay);
 
     float minDistance = 0.001f;
 
-    float minOcclusionDistance = std::numeric_limits<float>::infinity();
+    float minOcclusionDistance = rayLength;
 
     for (int i = 0; i < (int) objects.size(); ++i)
     {
@@ -217,24 +218,30 @@ float getOcclusionValue(const vec3& triangleIntersectionPoint, const vec3& light
         }
     }
 
-    return minOcclusionDistance / rayLength;
+    occlusionValue = minOcclusionDistance / rayLength;
+    lightAngle = dot(normalize(shadowRay), surfaceNormal);
 }
 
-void getReducedOcclusionValue(const vec3& triangleIntersectionPoint, const std::vector<Light>& lights, const std::vector<Object>& objects,
-                               float& occlusionValueResult, float& occlusionRadiusResult)
+void getReducedOcclusionValue(const vec3& triangleIntersectionPoint, const vec3& surfaceNormal, const std::vector<Light>& lights, const std::vector<Object>& objects,
+                               float& occlusionValueResult, float& occlusionRadiusResult, float& lightAngleResult)
 {
     float occlusionValue = 1.0f;
     float occlusionLightRadius = 0.0f;
+    float lightAngle = 1.0f;
     for (Light light : lights)
     {
-        float lightOcclusionValue = getOcclusionValue(triangleIntersectionPoint, light.position, light.radius, objects);
-        if (lightOcclusionValue < occlusionValue)
+        float checkOcclusionValue;
+        float checkLightAngle;
+        getOcclusionValue(triangleIntersectionPoint, surfaceNormal, light.position, light.radius, objects, checkOcclusionValue, checkLightAngle);
+        if (checkOcclusionValue < occlusionValue)
         {
-            occlusionValue = lightOcclusionValue;
+            occlusionValue = checkOcclusionValue;
             occlusionLightRadius = light.radius;
+            lightAngle = checkLightAngle;
         }
     }
 
     occlusionValueResult = occlusionValue;
-    occlusionRadiusResult = occlusionLightRadius;
+    occlusionRadiusResult = 10.0f * occlusionLightRadius;
+    lightAngleResult = lightAngle;
 }

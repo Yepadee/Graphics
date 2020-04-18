@@ -232,7 +232,41 @@ float getShadowIntensityMLP(const RayTriangleIntersection& rti, const vec3& ligh
     return shadowIntensity;
 }
 
-float getShadowStrength(float* occlusionBuffer, float* depthBuffer, int canvasPos)
+float getShadowStrength(float* occlusionBuffer, float* depthBuffer, float lightSize, int canvasX, int canvasY, int canvasNX, int canvasNY)
 {
-    
+    float shadowStrength = 0.0f;
+
+    int canvasPos = canvasX + canvasY * canvasNX;
+    float occlusionValue = occlusionBuffer[canvasPos];
+
+    if (occlusionValue < 1.0f)
+    {
+        float pixelDepth = depthBuffer[canvasPos];
+        int sampleSize = std::abs((1.0f - occlusionValue) * lightSize / pixelDepth);
+
+        int startX = std::max(0, canvasX - sampleSize / 2);
+        int endX = std::min(canvasX, canvasX + sampleSize / 2);
+
+        int startY = std::max(0, canvasY - sampleSize / 2);
+        int endY = std::min(canvasY, canvasY + sampleSize / 2);
+
+        float max_dist = sampleSize * sampleSize / 4;
+        float min_dist_sq = std::numeric_limits<float>::infinity();
+
+        for (int j = startY; j < endY; ++j)
+        {
+            for (int i = startX; i < endX; ++i)
+            {
+                int checkPos = i + j * canvasNX;
+                float checkOcclusionValue = occlusionBuffer[checkPos];
+                if (checkOcclusionValue >= 1.0f)
+                {       
+                    float dist_sq = (j - canvasY) * (j - canvasY) + (i - canvasX) * (i - canvasX);
+                    if (dist_sq < min_dist_sq) min_dist_sq = dist_sq;
+                }
+            }
+        }
+        shadowStrength = sqrt(min_dist_sq) / sqrt(max_dist);
+    }
+    return shadowStrength;
 }
