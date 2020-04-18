@@ -133,7 +133,7 @@ vec3 applyBrightness(const Colour& colour, float rl, float gl, float bl)
  * @param lights The locations and brightnesses of the light sources.
  * @return The illumnated point colour.
  */
-vec3 illuminatePoint(const RayTriangleIntersection& rti, const vec3& cameraRay, const std::vector<Object>& objects, const std::vector<Light>& lights)
+vec3 getPointBrightess(const RayTriangleIntersection& rti, const vec3& cameraRay, const std::vector<Object>& objects, const std::vector<Light>& lights)
 {
     float ambiance = 0.2f;
     float brightness = 0.0f;
@@ -178,9 +178,7 @@ vec3 illuminatePoint(const RayTriangleIntersection& rti, const vec3& cameraRay, 
     gl *= brightness;
     bl *= brightness;
 
-    vec3 colour = applyBrightness(rti.colour, rl, gl, bl);
-
-    return colour;
+    return vec3(rl, gl, bl);
 }
 
 float getOcclusionValue(const vec3& triangleIntersectionPoint, const vec3& lightPosition, float lightRadius, const std::vector<Object>& objects)
@@ -222,15 +220,21 @@ float getOcclusionValue(const vec3& triangleIntersectionPoint, const vec3& light
     return minOcclusionDistance / rayLength;
 }
 
-float getReducedOcclusionValue(const vec3& triangleIntersectionPoint, const std::vector<Light>& lights, const std::vector<Object>& objects)
+void getReducedOcclusionValue(const vec3& triangleIntersectionPoint, const std::vector<Light>& lights, const std::vector<Object>& objects,
+                               float& occlusionValueResult, float& occlusionRadiusResult)
 {
     float occlusionValue = 1.0f;
-
+    float occlusionLightRadius = 0.0f;
     for (Light light : lights)
     {
         float lightOcclusionValue = getOcclusionValue(triangleIntersectionPoint, light.position, light.radius, objects);
-        occlusionValue = min(occlusionValue, lightOcclusionValue);
+        if (lightOcclusionValue < occlusionValue)
+        {
+            occlusionValue = lightOcclusionValue;
+            occlusionLightRadius = light.radius;
+        }
     }
 
-    return occlusionValue;
+    occlusionValueResult = occlusionValue;
+    occlusionRadiusResult = occlusionLightRadius;
 }
