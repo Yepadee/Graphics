@@ -57,12 +57,19 @@ std::vector<Light> lights = {
   //, {0.0f, 2.4f, 1.8f, 150.0f}
 }; 
 
+//Must be square for shadow calculations
 std::vector<glm::vec3> offsets = {
-  {0.0f, 0.0f, 2.0f},
-  {0.5f, 0.5f, 1.0f},
+  {-0.5f, -0.5f, 1.0f},
+  {0.0f, -0.5f, 0.0f},
   {0.5f, -0.5f, 1.0f},
+
+  {-0.5f, 0.0f, 0.0f},
+  {0.0f, 0.0f, 2.0f},
+  {0.5f, 0.0f, 0.0f},
+
   {-0.5f, 0.5f, 1.0f},
-  {-0.5f, -0.5f, 1.0f}
+  {0.0f, 0.5f, 0.0f},
+  {-0.5f, 0.5f, 1.0f}
 };
 
 int drawMode = 0;

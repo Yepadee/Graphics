@@ -232,7 +232,7 @@ float getShadowIntensityMLP(const RayTriangleIntersection& rti, const vec3& ligh
     return shadowIntensity;
 }
 
-float getShadowStrength(vec3* colourBuffer, float* occlusionBuffer, float* depthBuffer, int canvasPos)
+float getShadowStrength(float* occlusionBuffer, float* depthBuffer, int canvasPos)
 {
     
 }
