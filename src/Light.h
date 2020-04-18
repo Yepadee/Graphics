@@ -229,8 +229,8 @@ float getOcclusionValue(const vec3& triangleIntersectionPoint, const vec3& shado
     return minOcclusionDistance / rayLength;
 }
 
-void getReducedOcclusionValue(const vec3& triangleIntersectionPoint, const vec3& surfaceNormal, const std::vector<Light>& lights, const std::vector<Object>& objects,
-                               float& occlusionValueResult, float& occlusionRadiusResult, float& lightDirectionResult)
+void getShadowData(const vec3& triangleIntersectionPoint, const vec3& surfaceNormal, const std::vector<Light>& lights, const std::vector<Object>& objects,
+                   float& occlusionValueResult, float& occlusionRadiusResult, float& lightDirectionResult)
 {
     float occlusionValue = 1.0f;
     float occlusionLightRadius = 0.0f;

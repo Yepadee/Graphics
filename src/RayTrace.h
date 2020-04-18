@@ -207,7 +207,7 @@ void rayTraceObjects(const std::vector<Object>& objects, const std::vector<Light
                     {
                         depthBuffer[bufferPos] = rti.intersectionPoint.z;
 
-                        getReducedOcclusionValue(
+                        getShadowData(
                             rti.intersectionPoint, rti.normal, lights, objects,
                             occlusionBuffer[bufferPos],
                             lightSizeBuffer[bufferPos],
