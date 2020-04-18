@@ -285,7 +285,7 @@ float getOcclusionValue(const vec3& triangleIntersectionPoint, const vec3& shado
 void getShadowData(const vec3& triangleIntersectionPoint, const vec3& surfaceNormal, const std::vector<Light>& lights, const std::vector<Object>& objects,
                    float& occlusionValueResult, float& occlusionRadiusResult, float& lightDirectionResult)
 {
-    float occlusionValue = 1.0f;
+    float occlusionValue = 0.0f;
     float occlusionLightRadius = 0.0f;
     float lightDirection = 1.0f;
     for (Light light : lights)
@@ -293,7 +293,7 @@ void getShadowData(const vec3& triangleIntersectionPoint, const vec3& surfaceNor
         vec3 shadowRay = getShadowRay(light.position, triangleIntersectionPoint);
         float checkOcclusionValue = getOcclusionValue(triangleIntersectionPoint, shadowRay, light.radius, objects);
         float checklightDirection = getLightDirection(surfaceNormal, shadowRay);
-        if (checkOcclusionValue < occlusionValue)
+        if (checkOcclusionValue > occlusionValue)
         {
             occlusionValue = checkOcclusionValue;
             occlusionLightRadius = light.radius;

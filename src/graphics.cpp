@@ -54,7 +54,7 @@ Object hsLogo = loadOBJ("models/logo.obj", 0.008f, {-3.6f, 0.0f, -0.75f})[0];
 
 std::vector<Light> lights = {
   Light({-0.159877f, 4.71896f, -2.98309f}, 1.0f, 8.0f, 1.0f, 1.0f, 1.0f)
-  //, {0.0f, 2.4f, 1.8f, 150.0f}
+  //, Light({0.0f, 2.4f, 1.8f}, 1.0f, 8.0f, 1.0f, 1.0f, 1.0f)
 }; 
 
 //Must be square for shadow calculations
