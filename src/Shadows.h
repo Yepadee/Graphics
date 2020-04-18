@@ -350,5 +350,5 @@ float getShadowStrength(float* occlusionBuffer, float* depthBuffer, float lightS
         }
     }
 
-    return shadowStrength;
+    return std::min(1.0f, shadowStrength);
 }

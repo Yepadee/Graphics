@@ -239,7 +239,7 @@ void rayTraceObjects(const std::vector<Object>& objects, const std::vector<Light
             float lightDirection = lightDirectionBuffer[bufferPos];
 
             float shadowStrength = getShadowStrength(occlusionBuffer, depthBuffer, lightSize, lightDirection, canvasX, canvasY, canvasNX, canvasNY);
-            float shadowBrightness = std::max(0.2f, (1.0f - shadowStrength));
+            float shadowBrightness = 0.4f + 0.6f * (1.0f - shadowStrength);
             screenBuffer[bufferPos] = packRGB(colour * brightness * shadowBrightness);
         }
     }
