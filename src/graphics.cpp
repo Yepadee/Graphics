@@ -58,18 +58,24 @@ std::vector<Light> lights = {
 }; 
 
 //Must be square for shadow calculations
-std::vector<glm::vec3> offsets = {
-  {-0.5f, -0.5f, 1.0f},
-  {0.0f, -0.5f, 0.0f},
-  {0.5f, -0.5f, 1.0f},
+std::vector<std::vector<glm::vec3>> offsets = {
+  {
+    {-0.5f, -0.5f, 1.0f},
+    {0.0f, -0.5f, 0.0f},
+    {0.5f, -0.5f, 1.0f}
+  },
 
-  {-0.5f, 0.0f, 0.0f},
-  {0.0f, 0.0f, 2.0f},
-  {0.5f, 0.0f, 0.0f},
+  {
+    {-0.5f, 0.0f, 0.0f},
+    {0.0f, 0.0f, 2.0f},
+    {0.5f, 0.0f, 0.0f}
+  },
 
-  {-0.5f, 0.5f, 1.0f},
-  {0.0f, 0.5f, 0.0f},
-  {-0.5f, 0.5f, 1.0f}
+  {
+    {-0.5f, 0.5f, 1.0f},
+    {0.0f, 0.5f, 0.0f},
+    {-0.5f, 0.5f, 1.0f}
+  }
 };
 
 int drawMode = 0;
@@ -85,7 +91,7 @@ int main(int argc, char* argv[])
   //objects.push_back(hsLogo);
 
   cameraToWorld = constructCameraSpace(cameraPos, cameraAngle);
-  rayTraceObjects(objects, lights, cameraToWorld, focalLength, window, offsets);
+  rayTraceObjects(objects, lights, cameraToWorld, focalLength, window, offsets, 3, 3);
 
   bool running = false;
   while(!running)
@@ -122,7 +128,7 @@ void draw()
       rasteriseObjects(objects, cameraToWorld, focalLength, window);
       break;
     case 2:
-      rayTraceObjects(objects, lights, cameraToWorld, focalLength, window, offsets);
+      rayTraceObjects(objects, lights, cameraToWorld, focalLength, window, offsets, 3, 3);
       break;
   }
 

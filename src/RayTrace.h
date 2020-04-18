@@ -118,10 +118,8 @@ bool getClosestIntersection(const vec3& cameraPosition, const vec3& rayDirection
     return found;
 }
 
-void drawScreenBuffer(DrawingWindow& window, std::vector<vec3> aaOffsets, uint32_t* screenBuffer)
+void drawScreenBuffer(DrawingWindow& window, const std::vector<std::vector<vec3>>& aaOffsets, int aaOffsetNX, int aaOffsetNY, uint32_t* screenBuffer)
 {
-    int numAAOffsets = aaOffsets.size();
-
     for (int j = 0; j < window.height; ++j)
     {
         for (int i = 0; i < window.width; ++i)
@@ -131,16 +129,20 @@ void drawScreenBuffer(DrawingWindow& window, std::vector<vec3> aaOffsets, uint32
             float sumBlue = 0;
             float sumWeights = 0.0f;
 
-            for (int k = 0; k < numAAOffsets; ++k)
+            for (int jj = 0; jj < aaOffsetNY; ++jj)
             {
-                vec3 offset = aaOffsets[k];
+                for (int ii = 0; ii < aaOffsetNX; ++ii)
+                {
+                    vec3 offset = aaOffsets[jj][ii];
+                    int bufferPos = (ii + i * aaOffsetNX) + (jj + j * aaOffsetNY) * window.width * aaOffsetNX;
 
-                uint32_t colour = screenBuffer[k + i * numAAOffsets + j * window.width * numAAOffsets];
+                    int32_t colour = screenBuffer[bufferPos];
 
-                sumRed += offset.z * ((colour & (255 << 16)) >> 16);
-                sumGreen += offset.z * ((colour & (255 << 8)) >> 8);
-                sumBlue += offset.z * (colour & (255));
-                sumWeights += offset.z;
+                    sumRed += offset.z * ((colour & (255 << 16)) >> 16);
+                    sumGreen += offset.z * ((colour & (255 << 8)) >> 8);
+                    sumBlue += offset.z * (colour & (255));
+                    sumWeights += offset.z;
+                }
             }
 
             uint32_t aaColour = packRGB(sumRed / sumWeights, sumGreen / sumWeights, sumBlue / sumWeights);
@@ -157,7 +159,9 @@ void drawScreenBuffer(DrawingWindow& window, std::vector<vec3> aaOffsets, uint32
  * @param focalLength The focal length of the camera.
  * @param window The window to draw ray-traced objects on.
  */
-void rayTraceObjects(const std::vector<Object>& objects, const std::vector<Light>& lights, const mat4x4& cameraToWorld, float focalLength, DrawingWindow& window, std::vector<vec3> aaOffsets)
+void rayTraceObjects(const std::vector<Object>& objects, const std::vector<Light>& lights,
+                     const mat4x4& cameraToWorld, float focalLength, DrawingWindow& window,
+                     const std::vector<std::vector<vec3>>& aaOffsets, int aaOffsetNX, int aaOffsetNY)
 {
     mat3x3 cameraSpace = getCameraRotation(cameraToWorld);
     vec3 cameraPos = getCameraPosition(cameraToWorld);
@@ -165,7 +169,7 @@ void rayTraceObjects(const std::vector<Object>& objects, const std::vector<Light
     std::cout << cameraPos << std::endl;
     std::cout << cameraSpace << std::endl;
     
-    int numAAOffsets = aaOffsets.size();
+    int numAAOffsets = aaOffsetNX * aaOffsetNY;
 
     vec3 rayWorldSpace;
     vec3 rayCameraSpace;
@@ -180,50 +184,57 @@ void rayTraceObjects(const std::vector<Object>& objects, const std::vector<Light
 
     for (int j = 0; j < window.height; ++j)
     {
-        for (int i = 0; i < window.width; ++i)
+        for (int jj = 0; jj < aaOffsetNY; ++jj)
         {
-            for (int k = 0; k < numAAOffsets; ++k)
+            for (int i = 0; i < window.width; ++i)
             {
-                vec3 offset = aaOffsets[k];
-                rayCameraSpace.x = i - window.width / 2.0f + offset.x;
-                rayCameraSpace.y = window.height / 2.0f - j + offset.y;
-                rayCameraSpace.z = -focalLength;
-
-                rayWorldSpace = normalize(cameraSpace * rayCameraSpace);
-
-                if (getClosestIntersection(cameraPos, rayWorldSpace, objects, rti))
+                for (int ii = 0; ii < aaOffsetNX; ++ii)
                 {
-                    depthBuffer[k + i * numAAOffsets + j * window.width * numAAOffsets] = rti.intersectionPoint.z;
+                    vec3 offset = aaOffsets[jj][ii];
+                    rayCameraSpace.x = i - window.width / 2.0f + offset.x;
+                    rayCameraSpace.y = window.height / 2.0f - j + offset.y;
+                    rayCameraSpace.z = -focalLength;
 
-                    getReducedOcclusionValue(rti.intersectionPoint, lights, objects,
-                    occlusionBuffer[k + i * numAAOffsets + j * window.width * numAAOffsets],
-                    lightSizeBuffer[k + i * numAAOffsets + j * window.width * numAAOffsets]);
+                    rayWorldSpace = normalize(cameraSpace * rayCameraSpace);
 
-                    colourBuffer[k + i * numAAOffsets + j * window.width * numAAOffsets] = vec3(rti.colour.red, rti.colour.green, rti.colour.blue);
-                    brightnessBuffer[k + i * numAAOffsets + j * window.width * numAAOffsets] = getPointBrightess(rti, rayWorldSpace, objects, lights);
+                    int bufferPos = (ii + i * aaOffsetNX) + (jj + j * aaOffsetNY) * window.width * aaOffsetNX;
 
-                    
-                    
-                    if (occlusionBuffer[k + i * numAAOffsets + j * window.width * numAAOffsets] < 1.0f)
+                    if (getClosestIntersection(cameraPos, rayWorldSpace, objects, rti))
                     {
-                        brightnessBuffer[k + i * numAAOffsets + j * window.width * numAAOffsets] = vec3(0.2f);
-                    }
-                }
-                else
-                {
-                    occlusionBuffer[k + i * numAAOffsets + j * window.width * numAAOffsets] = 1.0f;
-                    colourBuffer[k + i * numAAOffsets + j * window.width * numAAOffsets] = vec3(0.0f);
-                }
+                        depthBuffer[bufferPos] = rti.intersectionPoint.z;
 
-                screenBuffer[k + i * numAAOffsets + j * window.width * numAAOffsets] = packRGB(colourBuffer[k + i * numAAOffsets + j * window.width * numAAOffsets] * 
-                                                                                               brightnessBuffer[k + i * numAAOffsets + j * window.width * numAAOffsets]);
+                        getReducedOcclusionValue(
+                            rti.intersectionPoint, lights, objects,
+                            occlusionBuffer[bufferPos],
+                            lightSizeBuffer[bufferPos]
+                        );
+
+                        colourBuffer[bufferPos] = vec3(rti.colour.red, rti.colour.green, rti.colour.blue);
+                        brightnessBuffer[bufferPos] = getPointBrightess(rti, rayWorldSpace, objects, lights);
+
+                        
+                        
+                        if (occlusionBuffer[bufferPos] < 1.0f)
+                        {
+                            brightnessBuffer[bufferPos] = vec3(0.2f);
+                        }
+                    }
+                    else
+                    {
+                        occlusionBuffer[bufferPos] = 1.0f;
+                        colourBuffer[bufferPos] = vec3(0.0f);
+                    }
+
+                    screenBuffer[bufferPos] = packRGB(colourBuffer[bufferPos] * brightnessBuffer[bufferPos]);
+                }
             }
         }
+
     }
 
     
 
-    drawScreenBuffer(window, aaOffsets, screenBuffer);
+    drawScreenBuffer(window, aaOffsets, aaOffsetNX, aaOffsetNY, screenBuffer);
 }
 
 
