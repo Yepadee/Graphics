@@ -59,7 +59,8 @@ bool getClosestIntersection(const vec3& cameraPosition, const vec3& rayDirection
             if (u >= 0.0f && u <= 1.0f &&
                 v >= 0.0f && v <= 1.0f &&
                 u + v     <=      1.0f &&
-                t < minPointDistance)
+                t < minPointDistance &&
+                t > 0.01)
             {
                 minPointDistance = t;
                 result.intersectionPoint = triangle.vertices[0] + u * e0 + v * e1;
@@ -205,17 +206,47 @@ void rayTraceObjects(const std::vector<Object>& objects, const std::vector<Light
 
                     if (getClosestIntersection(cameraPos, rayWorldSpace, objects, rti))
                     {
-                        depthBuffer[bufferPos] = rti.intersectionPoint.z;
+                        if (rti.intersectedTriangle.isMirror)
+                        {
+                            //std::cout << "p1: " << rti.objectId << std::endl;
+                            vec3 reflectedRay = normalize(reflectRay(rayWorldSpace, normalize(rti.normal)));
+                            if (getClosestIntersection(rti.intersectionPoint, reflectedRay, objects, rti))
+                            {
+                                //std::cout << "p2: " << rti.objectId << std::endl;
+                                depthBuffer[bufferPos] = rti.intersectionPoint.z;
 
-                        getShadowData(
-                            rti.intersectionPoint, rti.normal, lights, objects,
-                            occlusionBuffer[bufferPos],
-                            lightSizeBuffer[bufferPos],
-                            lightDirectionBuffer[bufferPos]
-                        );
+                                getShadowData(
+                                    rti.intersectionPoint, rti.normal, lights, objects,
+                                    occlusionBuffer[bufferPos],
+                                    lightSizeBuffer[bufferPos],
+                                    lightDirectionBuffer[bufferPos]
+                                );
 
-                        colourBuffer[bufferPos] = vec3(rti.colour.red, rti.colour.green, rti.colour.blue);
-                        brightnessBuffer[bufferPos] = getPointBrightess(rti, rayWorldSpace, objects, lights);
+                                colourBuffer[bufferPos] = vec3(rti.colour.red, rti.colour.green, rti.colour.blue);
+                                brightnessBuffer[bufferPos] = getPointBrightess(rti, rayWorldSpace, objects, lights);
+                            }
+                            else
+                            {
+                                occlusionBuffer[bufferPos] = 1.0f;
+                                colourBuffer[bufferPos] = vec3(0.0f);
+                            }
+                        }
+                        else
+                        {
+                            depthBuffer[bufferPos] = rti.intersectionPoint.z;
+
+                            getShadowData(
+                                rti.intersectionPoint, rti.normal, lights, objects,
+                                occlusionBuffer[bufferPos],
+                                lightSizeBuffer[bufferPos],
+                                lightDirectionBuffer[bufferPos]
+                            );
+
+                            colourBuffer[bufferPos] = vec3(rti.colour.red, rti.colour.green, rti.colour.blue);
+                            brightnessBuffer[bufferPos] = getPointBrightess(rti, rayWorldSpace, objects, lights);
+                        }
+                        
+
                     }
                     else
                     {

@@ -49,6 +49,11 @@ void drawLine(const CanvasPoint& from, const CanvasPoint& to, uint32_t colour, D
   {
     float x = from.x + (xStepSize*i);
     float y = from.y + (yStepSize*i);
+    if (x >= window.width) continue;
+    if (y >= window.height) continue;
+
+    if (x < 0) continue;
+    if (y < 0) continue;
     window.setPixelColour(floor(x), floor(y), colour);
   }
 }
@@ -108,8 +113,8 @@ void drawTriangle(const CanvasTriangle& triangle, uint32_t colour, DrawingWindow
   {
     CanvasPoint p1 = triangle.vertices[i];
     CanvasPoint p2 = triangle.vertices[j];
-    fitToWindow(p1, window);
-    fitToWindow(p2, window);
+    //fitToWindow(p1, window);
+    //fitToWindow(p2, window);
     drawLine(p1, p2, colour, window);
     j = i;
   }

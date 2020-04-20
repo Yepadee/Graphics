@@ -19,12 +19,13 @@ class ModelTriangle
     glm::vec3 normal;
     glm::vec3 vertexNormals[3];
     glm::vec2 textureVertices[3];
+    bool isMirror;
 
     ModelTriangle()
     {
     }
 
-    ModelTriangle(glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, Colour trigColour)
+    ModelTriangle(glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, Colour trigColour, bool p_isMirror)
     {
       vertices[0] = v0;
       vertices[1] = v1;
@@ -33,6 +34,7 @@ class ModelTriangle
       normal = (glm::cross(v1 - v0, v2 - v0));
       hasVertexNormals = false;
       hasTexture = false;
+      isMirror = p_isMirror;
     }
 
     void setVertexNormals(glm::vec3 n0, glm::vec3 n1, glm::vec3 n2)

@@ -248,7 +248,9 @@ Object readObject(std::ifstream& ifs, std::unordered_map<std::string, Colour>& c
         v1 = vertices[fv1] + displacement;
         v2 = vertices[fv2] + displacement;
 
-        ModelTriangle triangle(v0, v1, v2, colourMap[colour]); 
+
+        bool isMirror = colourMap[colour].name == "Grey";
+        ModelTriangle triangle(v0, v1, v2, colourMap[colour], isMirror); 
 
         if (hasNormals)
         {
