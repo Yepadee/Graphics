@@ -33,7 +33,7 @@ DrawingWindow window = DrawingWindow(WIDTH, HEIGHT, false);
 
 float theta = 0.0f;
 
-glm::vec3 cameraPos(0.0f, 2.4f, 3.8f);
+glm::vec3 cameraPos(0.0f, 2.4f, -1.8f);
 glm::vec3 cameraAngle(0.0f, 0.0f, 0.0f);
 glm::mat4x4 cameraToWorld = lookAt({0, 2, 5}, {0, 0, 0});
 

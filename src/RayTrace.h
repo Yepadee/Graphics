@@ -24,6 +24,7 @@ std::ostream& operator<<(std::ostream& os, const glm::mat3x3& mat)
     os << "|" << mat[2][0] << " " << mat[2][1] << " " << mat[2][2] << "|" << std::endl;
     return os;
 }
+                         
 
 /**
  * Get closest ray-triangle intersection.
@@ -36,10 +37,12 @@ std::ostream& operator<<(std::ostream& os, const glm::mat3x3& mat)
  */
 bool getClosestIntersection(const vec3& cameraPosition, const vec3& rayDirection,
                             const std::vector<Object>& objects,
-                            RayTriangleIntersection& result)
+                            RayTriangleIntersection& result, int depth)
 {
+    int maxReflections = 4;
     bool found = false;
     float minPointDistance = std::numeric_limits<float>::infinity();
+    
     for (int i = 0; i < (int) objects.size(); ++i)
     {
         Object object = objects[i];
@@ -56,14 +59,16 @@ bool getClosestIntersection(const vec3& cameraPosition, const vec3& rayDirection
             float u = possibleSolution.y;
             float v = possibleSolution.z;
 
+            vec3 intersectionPoint = cameraPosition + rayDirection * t;
+
             if (u >= 0.0f && u <= 1.0f &&
                 v >= 0.0f && v <= 1.0f &&
                 u + v     <=      1.0f &&
                 t < minPointDistance &&
-                t > 0.01)
+                t > 0.0001f)
             {
                 minPointDistance = t;
-                result.intersectionPoint = triangle.vertices[0] + u * e0 + v * e1;
+                result.intersectionPoint = intersectionPoint;
                 result.distanceFromCamera = minPointDistance;
                 result.intersectedTriangle = triangle;
                 result.objectId = i;
@@ -116,8 +121,22 @@ bool getClosestIntersection(const vec3& cameraPosition, const vec3& rayDirection
         }
     }
 
+    if (result.intersectedTriangle.isMirror && depth < maxReflections)
+    {
+        vec3 intersectionPoint = result.intersectionPoint;
+        vec3 reflectedRay = normalize(reflectRay(rayDirection, normalize(result.normal)));
+        found = getClosestIntersection(intersectionPoint, reflectedRay, objects, result, depth + 1);
+    }
+
     return found;
 }
+
+bool getClosestIntersection(const vec3& cameraPosition, const vec3& rayDirection,
+                            const std::vector<Object>& objects,
+                            RayTriangleIntersection& result)
+{
+    return getClosestIntersection(cameraPosition, rayDirection, objects, result, 0);
+}   
 
 void drawScreenBuffer(DrawingWindow& window, const std::vector<std::vector<vec3>>& aaOffsets, int aaOffsetNX, int aaOffsetNY, uint32_t* screenBuffer)
 {
@@ -206,47 +225,17 @@ void rayTraceObjects(const std::vector<Object>& objects, const std::vector<Light
 
                     if (getClosestIntersection(cameraPos, rayWorldSpace, objects, rti))
                     {
-                        if (rti.intersectedTriangle.isMirror)
-                        {
-                            //std::cout << "p1: " << rti.objectId << std::endl;
-                            vec3 reflectedRay = normalize(reflectRay(rayWorldSpace, normalize(rti.normal)));
-                            if (getClosestIntersection(rti.intersectionPoint, reflectedRay, objects, rti))
-                            {
-                                //std::cout << "p2: " << rti.objectId << std::endl;
-                                depthBuffer[bufferPos] = rti.intersectionPoint.z;
+                        depthBuffer[bufferPos] = rti.intersectionPoint.z;
 
-                                getShadowData(
-                                    rti.intersectionPoint, rti.normal, lights, objects,
-                                    occlusionBuffer[bufferPos],
-                                    lightSizeBuffer[bufferPos],
-                                    lightDirectionBuffer[bufferPos]
-                                );
+                        getShadowData(
+                            rti.intersectionPoint, rti.normal, lights, objects,
+                            occlusionBuffer[bufferPos],
+                            lightSizeBuffer[bufferPos],
+                            lightDirectionBuffer[bufferPos]
+                        );
 
-                                colourBuffer[bufferPos] = vec3(rti.colour.red, rti.colour.green, rti.colour.blue);
-                                brightnessBuffer[bufferPos] = getPointBrightess(rti, rayWorldSpace, objects, lights);
-                            }
-                            else
-                            {
-                                occlusionBuffer[bufferPos] = 1.0f;
-                                colourBuffer[bufferPos] = vec3(0.0f);
-                            }
-                        }
-                        else
-                        {
-                            depthBuffer[bufferPos] = rti.intersectionPoint.z;
-
-                            getShadowData(
-                                rti.intersectionPoint, rti.normal, lights, objects,
-                                occlusionBuffer[bufferPos],
-                                lightSizeBuffer[bufferPos],
-                                lightDirectionBuffer[bufferPos]
-                            );
-
-                            colourBuffer[bufferPos] = vec3(rti.colour.red, rti.colour.green, rti.colour.blue);
-                            brightnessBuffer[bufferPos] = getPointBrightess(rti, rayWorldSpace, objects, lights);
-                        }
-                        
-
+                        colourBuffer[bufferPos] = vec3(rti.colour.red, rti.colour.green, rti.colour.blue);
+                        brightnessBuffer[bufferPos] = getPointBrightess(rti, rayWorldSpace, objects, lights);
                     }
                     else
                     {

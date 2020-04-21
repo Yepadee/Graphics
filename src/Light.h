@@ -74,7 +74,7 @@ float applyDiffuse(const RayTriangleIntersection& rti, const Light& light)
     return applyAOILight(rti, light) * applyProximityLight(rti, light);
 }
 
-vec3 reflectRay(const vec3 &ray, const vec3 &normal) 
+vec3 reflectRay(const vec3& ray, const vec3& normal) 
 { 
     return ray - 2 * dot(ray, normal) * normal; 
 } 
