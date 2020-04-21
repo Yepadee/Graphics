@@ -33,7 +33,7 @@ DrawingWindow window = DrawingWindow(WIDTH, HEIGHT, false);
 
 float theta = 0.0f;
 
-glm::vec3 cameraPos(0.0f, 2.4f, -1.8f);
+glm::vec3 cameraPos(0.0f, 2.4f, 3.8f);
 glm::vec3 cameraAngle(0.0f, 0.0f, 0.0f);
 glm::mat4x4 cameraToWorld = lookAt({0, 2, 5}, {0, 0, 0});
 
@@ -78,6 +78,9 @@ std::vector<std::vector<glm::vec3>> offsets = {
   }
 };
 
+int offsetsNX = 3;
+int offsetsNY = 3;
+
 int drawMode = 0;
 int movementMode = 1;
 
@@ -90,8 +93,10 @@ int main(int argc, char* argv[])
   //objects.push_back(sphere);
   //objects.push_back(hsLogo);
 
+  initBuffers(WIDTH, HEIGHT, offsetsNX, offsetsNY);
+
   cameraToWorld = constructCameraSpace(cameraPos, cameraAngle);
-  rayTraceObjects(objects, lights, cameraToWorld, focalLength, window, offsets, 3, 3);
+  rayTraceObjects(objects, lights, cameraToWorld, focalLength, window, offsets, offsetsNX, offsetsNY);
 
   bool running = false;
   while(!running)
@@ -112,6 +117,8 @@ int main(int argc, char* argv[])
     // Need to render the frame at the end, or nothing actually gets shown on the screen !
     window.renderFrame();
   }
+
+  freeBuffers();
 }
 
 void draw()
@@ -128,7 +135,7 @@ void draw()
       rasteriseObjects(objects, cameraToWorld, focalLength, window);
       break;
     case 2:
-      rayTraceObjects(objects, lights, cameraToWorld, focalLength, window, offsets, 3, 3);
+      rayTraceObjects(objects, lights, cameraToWorld, focalLength, window, offsets, offsetsNX, offsetsNY);
       break;
   }
 

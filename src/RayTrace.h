@@ -17,6 +17,14 @@
 
 using namespace glm;
 
+vec3* colourBuffer;
+vec3* brightnessBuffer;
+uint32_t* screenBuffer;
+float* occlusionBuffer;
+float* rayDepthBuffer;
+float* lightSizeBuffer;
+float* lightDirectionBuffer;
+
 std::ostream& operator<<(std::ostream& os, const glm::mat3x3& mat)
 {
     os << "|" << mat[0][0] << " " << mat[0][1] << " " << mat[0][2] << "|" << std::endl;
@@ -24,7 +32,30 @@ std::ostream& operator<<(std::ostream& os, const glm::mat3x3& mat)
     os << "|" << mat[2][0] << " " << mat[2][1] << " " << mat[2][2] << "|" << std::endl;
     return os;
 }
-                         
+
+void initBuffers(int windowNX, int windowNY, int aaOffsetNX, int aaOffsetNY)
+{
+    int bufferSize = windowNX * windowNY * aaOffsetNX * aaOffsetNY;
+    colourBuffer = new vec3[bufferSize];
+    brightnessBuffer = new vec3[bufferSize];
+    screenBuffer = new uint32_t[bufferSize];
+    occlusionBuffer = new float[bufferSize];
+    rayDepthBuffer = new float[bufferSize];
+    lightSizeBuffer = new float[bufferSize];
+    lightDirectionBuffer = new float[bufferSize];
+}
+
+void freeBuffers()
+{
+    free(colourBuffer);
+    free(colourBuffer);       
+    free(brightnessBuffer);   
+    free(screenBuffer);       
+    free(occlusionBuffer);    
+    free(rayDepthBuffer);        
+    free(lightSizeBuffer);    
+    free(lightDirectionBuffer);
+}
 
 /**
  * Get closest ray-triangle intersection.
@@ -188,8 +219,6 @@ void rayTraceObjects(const std::vector<Object>& objects, const std::vector<Light
 
     std::cout << cameraPos << std::endl;
     std::cout << cameraSpace << std::endl;
-    
-    int numAAOffsets = aaOffsetNX * aaOffsetNY;
 
     int canvasNX = aaOffsetNX * window.width;
     int canvasNY = aaOffsetNY * window.height;
@@ -197,14 +226,6 @@ void rayTraceObjects(const std::vector<Object>& objects, const std::vector<Light
     vec3 rayWorldSpace;
     vec3 rayCameraSpace;
     RayTriangleIntersection rti;
-
-    vec3* colourBuffer = new vec3[window.width * window.height * numAAOffsets];
-    vec3* brightnessBuffer = new vec3[window.width * window.height * numAAOffsets];
-    uint32_t* screenBuffer = new uint32_t[window.width * window.height * numAAOffsets];
-    float* occlusionBuffer = new float[window.width * window.height * numAAOffsets];
-    float* depthBuffer = new float[window.width * window.height * numAAOffsets];
-    float* lightSizeBuffer = new float[window.width * window.height * numAAOffsets];
-    float* lightDirectionBuffer = new float[window.width * window.height * numAAOffsets];
 
     for (int j = 0; j < window.height; ++j)
     {
@@ -225,7 +246,7 @@ void rayTraceObjects(const std::vector<Object>& objects, const std::vector<Light
 
                     if (getClosestIntersection(cameraPos, rayWorldSpace, objects, rti))
                     {
-                        depthBuffer[bufferPos] = rti.intersectionPoint.z;
+                        rayDepthBuffer[bufferPos] = rti.intersectionPoint.z;
 
                         getShadowData(
                             rti.intersectionPoint, rti.normal, lights, objects,
@@ -258,7 +279,7 @@ void rayTraceObjects(const std::vector<Object>& objects, const std::vector<Light
             float lightSize = lightSizeBuffer[bufferPos];
             float lightDirection = lightDirectionBuffer[bufferPos];
 
-            float shadowStrength = getShadowStrength(occlusionBuffer, depthBuffer, lightSize, lightDirection, canvasX, canvasY, canvasNX, canvasNY);
+            float shadowStrength = getShadowStrength(occlusionBuffer, rayDepthBuffer, lightSize, lightDirection, canvasX, canvasY, canvasNX, canvasNY);
             float shadowBrightness = 0.4f + 0.6f * (1.0f - shadowStrength);
             screenBuffer[bufferPos] = packRGB(colour * brightness * shadowBrightness);
         }
