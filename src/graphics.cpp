@@ -49,13 +49,13 @@ int frameNo = 0;
 
 std::vector<Object> objects = loadOBJ("models/cornell-box.obj", 1.0f, {0.0f, 0.0f, 0.0f});
 Object sphere = loadOBJ("models/sphere.obj", 0.04f, {-1.5f, 1.5f, 0.0f})[0];
-Object hsLogo = loadOBJ("models/logo.obj", 0.008f, {-3.6f, 0.0f, -0.75f})[0];
+Object hsLogo = loadOBJ("models/logo.obj", 0.01f, {-2.8f, 0.0f, -5.5f})[0];
 
 
 std::vector<Light> lights = {
-  Light({-0.159877f, 4.71896f, -2.98309f}, 1.0f, 8.0f, 1.0f, 1.0f, 1.0f)
+  Light({-0.159877f, 4.71896f, -2.98309f}, 1.0f, 8.0f, 255.0f/255.0f, 244.0f/255.0f, 242.0f/255.0f)
   //, Light({0.0f, 2.4f, 1.8f}, 1.0f, 8.0f, 1.0f, 1.0f, 1.0f)
-}; 
+};
 
 //Must be square for shadow calculations
 std::vector<std::vector<glm::vec3>> offsets = {
@@ -90,8 +90,8 @@ int main(int argc, char* argv[])
   SDL_Event event;
   initDepthBuffer(WIDTH, HEIGHT);
 
-  //objects.push_back(sphere);
-  //objects.push_back(hsLogo);
+  objects.push_back(sphere);
+  objects.push_back(hsLogo);
 
   initBuffers(WIDTH, HEIGHT, offsetsNX, offsetsNY);
 
@@ -186,6 +186,13 @@ void cameraControls()
 void update()
 {
   updateKeyboard();
+
+  // for (Light& light: lights)
+  // {
+  //   light.r = ((int) (255.0f * light.r + 50.0f) % 255) / 255.0f;
+  //   light.g = 1.0f - light.r;
+  //   light.b = 1.0f;
+  // }
 
   switch (movementMode)
   {

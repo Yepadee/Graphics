@@ -40,7 +40,7 @@ float applyProximityLight(const RayTriangleIntersection& rti, const Light& light
 {   
     glm::vec3 diff = rti.intersectionPoint - light.position;
     float distSqr = dot(diff, diff);
-    float strength = 150.0f;
+    float strength = 200.0f;
     return strength / (4.0f * distSqr * M_PI);
 }
 

@@ -68,7 +68,7 @@ void freeBuffers()
  */
 bool getClosestIntersection(const vec3& cameraPosition, const vec3& rayDirection,
                             const std::vector<Object>& objects,
-                            RayTriangleIntersection& result, int depth)
+                            RayTriangleIntersection& result)
 {
     int maxReflections = 4;
     bool found = false;
@@ -152,22 +152,18 @@ bool getClosestIntersection(const vec3& cameraPosition, const vec3& rayDirection
         }
     }
 
-    if (result.intersectedTriangle.isMirror && depth < maxReflections)
+    if (result.intersectedTriangle.isMirror && result.reflections < maxReflections)
     {
+        result.reflections ++;
         vec3 intersectionPoint = result.intersectionPoint;
         vec3 reflectedRay = normalize(reflectRay(rayDirection, normalize(result.normal)));
-        found = getClosestIntersection(intersectionPoint, reflectedRay, objects, result, depth + 1);
+        found = getClosestIntersection(intersectionPoint, reflectedRay, objects, result);
     }
+
+
 
     return found;
 }
-
-bool getClosestIntersection(const vec3& cameraPosition, const vec3& rayDirection,
-                            const std::vector<Object>& objects,
-                            RayTriangleIntersection& result)
-{
-    return getClosestIntersection(cameraPosition, rayDirection, objects, result, 0);
-}   
 
 void drawScreenBuffer(DrawingWindow& window, const std::vector<std::vector<vec3>>& aaOffsets, int aaOffsetNX, int aaOffsetNY, uint32_t* screenBuffer)
 {
@@ -225,7 +221,6 @@ void rayTraceObjects(const std::vector<Object>& objects, const std::vector<Light
 
     vec3 rayWorldSpace;
     vec3 rayCameraSpace;
-    RayTriangleIntersection rti;
 
     for (int j = 0; j < window.height; ++j)
     {
@@ -244,6 +239,7 @@ void rayTraceObjects(const std::vector<Object>& objects, const std::vector<Light
 
                     int bufferPos = (ii + i * aaOffsetNX) + (jj + j * aaOffsetNY) * window.width * aaOffsetNX;
 
+                    RayTriangleIntersection rti;
                     if (getClosestIntersection(cameraPos, rayWorldSpace, objects, rti))
                     {
                         rayDepthBuffer[bufferPos] = rti.intersectionPoint.z;
@@ -256,7 +252,7 @@ void rayTraceObjects(const std::vector<Object>& objects, const std::vector<Light
                         );
 
                         colourBuffer[bufferPos] = vec3(rti.colour.red, rti.colour.green, rti.colour.blue);
-                        brightnessBuffer[bufferPos] = getPointBrightess(rti, rayWorldSpace, objects, lights);
+                        brightnessBuffer[bufferPos] = powf(0.8f, rti.reflections) * getPointBrightess(rti, rayWorldSpace, objects, lights);
                     }
                     else
                     {
@@ -281,7 +277,12 @@ void rayTraceObjects(const std::vector<Object>& objects, const std::vector<Light
 
             float shadowStrength = getShadowStrength(occlusionBuffer, rayDepthBuffer, lightSize, lightDirection, canvasX, canvasY, canvasNX, canvasNY);
             float shadowBrightness = 0.4f + 0.6f * (1.0f - shadowStrength);
-            screenBuffer[bufferPos] = packRGB(colour * brightness * shadowBrightness);
+
+            float br = std::max(0.2f, brightness.r * shadowBrightness);
+            float bg = std::max(0.2f, brightness.g * shadowBrightness);
+            float bb = std::max(0.2f, brightness.b * shadowBrightness);
+
+            screenBuffer[bufferPos] = packRGB(colour * vec3(br, bg, bb));
         }
     }
 

@@ -249,7 +249,7 @@ Object readObject(std::ifstream& ifs, std::unordered_map<std::string, Colour>& c
         v2 = vertices[fv2] + displacement;
 
 
-        bool isMirror = colourMap[colour].name == "Grey";
+        bool isMirror = colourMap[colour].name == "Yellow";
         ModelTriangle triangle(v0, v1, v2, colourMap[colour], isMirror); 
 
         if (hasNormals)
