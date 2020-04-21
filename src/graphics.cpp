@@ -48,7 +48,7 @@ float focalLength = WIDTH / 2;
 int frameNo = 0;
 
 std::vector<Object> objects = loadOBJ("models/cornell-box.obj", 1.0f, {0.0f, 0.0f, 0.0f});
-Object sphere = loadOBJ("models/sphere.obj", 0.04f, {-1.5f, 1.5f, 0.0f})[0];
+Object sphere = loadOBJ("models/sphere.obj", 0.04f, {-1.5f, 0.6f, -1.8f})[0];
 Object hsLogo = loadOBJ("models/logo.obj", 0.01f, {-2.8f, 0.0f, -5.5f})[0];
 
 
@@ -96,7 +96,7 @@ int main(int argc, char* argv[])
   initBuffers(WIDTH, HEIGHT, offsetsNX, offsetsNY);
 
   cameraToWorld = constructCameraSpace(cameraPos, cameraAngle);
-  rayTraceObjects(objects, lights, cameraToWorld, focalLength, window, offsets, offsetsNX, offsetsNY);
+  //rayTraceObjects(objects, lights, cameraToWorld, focalLength, window, offsets, offsetsNX, offsetsNY);
 
   bool running = false;
   while(!running)
