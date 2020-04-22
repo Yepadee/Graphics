@@ -71,15 +71,19 @@ bool getClosestIntersection(const vec3& cameraPosition, const vec3& rayDirection
                             RayTriangleIntersection& result)
 {
     int maxReflections = 4;
+    int maxRefractions = 16;
     bool found = false;
     float minPointDistance = std::numeric_limits<float>::infinity();
+
     
     for (int i = 0; i < (int) objects.size(); ++i)
     {
         Object object = objects[i];
         for (int j = 0; j < (int) object.triangles.size(); ++j)
         {
+            
             ModelTriangle triangle = object.triangles[j];
+            
             vec3 e0 = triangle.vertices[1] - triangle.vertices[0];
             vec3 e1 = triangle.vertices[2] - triangle.vertices[0];
             vec3 SPVector = cameraPosition - triangle.vertices[0];
@@ -91,7 +95,6 @@ bool getClosestIntersection(const vec3& cameraPosition, const vec3& rayDirection
             float v = possibleSolution.z;
 
             vec3 intersectionPoint = cameraPosition + rayDirection * t;
-
             if (u >= 0.0f && u <= 1.0f &&
                 v >= 0.0f && v <= 1.0f &&
                 u + v     <=      1.0f &&
@@ -104,7 +107,7 @@ bool getClosestIntersection(const vec3& cameraPosition, const vec3& rayDirection
                 result.intersectedTriangle = triangle;
                 result.objectId = i;
                 result.triangleId = j;
-
+                
                 if (triangle.hasVertexNormals)
                 {
                     vec3 n0 = triangle.vertexNormals[0];
@@ -116,7 +119,7 @@ bool getClosestIntersection(const vec3& cameraPosition, const vec3& rayDirection
                 {
                     result.normal = triangle.normal;
                 }
-
+                
                 if (triangle.hasTexture)
                 {
                     vec2 t0 = triangle.textureVertices[0];
@@ -160,10 +163,11 @@ bool getClosestIntersection(const vec3& cameraPosition, const vec3& rayDirection
         found = getClosestIntersection(intersectionPoint, reflectedRay, objects, result);
     }
 
-    if (result.intersectedTriangle.isGlass)
+    if (result.intersectedTriangle.isGlass && result.refractions < maxRefractions)
     {
-        vec3 refractedRay = normalize(refractRay(rayDirection, normalize(result.normal), 1.5f));
+        result.refractions ++;
         vec3 intersectionPoint = result.intersectionPoint;
+        vec3 refractedRay = normalize(refractRay(rayDirection, normalize(result.normal), 1.5f));
         found = getClosestIntersection(intersectionPoint, refractedRay, objects, result);
     }
 
@@ -227,6 +231,7 @@ void rayTraceObjects(const std::vector<Object>& objects, const std::vector<Light
 
     vec3 rayWorldSpace;
     vec3 rayCameraSpace;
+    
 
     for (int j = 0; j < window.height; ++j)
     {
@@ -246,6 +251,7 @@ void rayTraceObjects(const std::vector<Object>& objects, const std::vector<Light
                     int bufferPos = (ii + i * aaOffsetNX) + (jj + j * aaOffsetNY) * window.width * aaOffsetNX;
 
                     RayTriangleIntersection rti;
+
                     if (getClosestIntersection(cameraPos, rayWorldSpace, objects, rti))
                     {
                         rayDepthBuffer[bufferPos] = rti.intersectionPoint.z;

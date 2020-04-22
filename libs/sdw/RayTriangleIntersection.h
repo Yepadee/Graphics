@@ -13,6 +13,7 @@ class RayTriangleIntersection
     int objectId;
     int triangleId;
     int reflections = 0;
+    int refractions = 0;
 
     Colour colour;
 
