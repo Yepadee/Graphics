@@ -82,19 +82,7 @@ vec3 reflectRay(const vec3& ray, const vec3& normal)
 vec3 refractRay(const vec3& ray, const vec3& normal, const float ior)
 {
     
-    float cosi = 0.0f;
-    if (dot(ray, normal) > 1)
-    {
-        cosi = 1.0f;
-    }
-    else if (dot(ray, normal) < -1)
-    {
-        cosi = -1.0f;
-    }
-    else
-    {
-        cosi = dot(ray, normal);
-    }
+    float cosi = dot(ray, normal);
 
     float etai = 1.0f;
     float etat = ior; 
@@ -107,7 +95,7 @@ vec3 refractRay(const vec3& ray, const vec3& normal, const float ior)
     } 
     else 
     { 
-        //std::swap(etai, etat);
+        std::swap(etai, etat);
         n = normal * vec3(-1.0f);
     }
     
@@ -119,7 +107,7 @@ vec3 refractRay(const vec3& ray, const vec3& normal, const float ior)
     
     if (k < 0.0f)
     {
-        refractedRay =  vec3(0.0f);
+        refractedRay = reflectRay(ray, n);
     }
     else
     {
