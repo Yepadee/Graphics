@@ -160,6 +160,12 @@ bool getClosestIntersection(const vec3& cameraPosition, const vec3& rayDirection
         found = getClosestIntersection(intersectionPoint, reflectedRay, objects, result);
     }
 
+    if (result.intersectedTriangle.isGlass)
+    {
+        vec3 refractedRay = normalize(refractRay(rayDirection, normalize(result.normal), 1.5f));
+        vec3 intersectionPoint = result.intersectionPoint;
+        found = getClosestIntersection(intersectionPoint, refractedRay, objects, result);
+    }
 
 
     return found;

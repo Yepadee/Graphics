@@ -250,7 +250,8 @@ Object readObject(std::ifstream& ifs, std::unordered_map<std::string, Colour>& c
 
 
         bool isMirror = colourMap[colour].name == "Yellow";
-        ModelTriangle triangle(v0, v1, v2, colourMap[colour], isMirror); 
+        bool isGlass = colourMap[colour].name == "Red";
+        ModelTriangle triangle(v0, v1, v2, colourMap[colour], isMirror, isGlass); 
 
         if (hasNormals)
         {

@@ -79,6 +79,56 @@ vec3 reflectRay(const vec3& ray, const vec3& normal)
     return ray - 2 * dot(ray, normal) * normal; 
 } 
 
+vec3 refractRay(const vec3& ray, const vec3& normal, const float ior)
+{
+    
+    float cosi = 0.0f;
+    if (dot(ray, normal) > 1)
+    {
+        cosi = 1.0f;
+    }
+    else if (dot(ray, normal) < -1)
+    {
+        cosi = -1.0f;
+    }
+    else
+    {
+        cosi = dot(ray, normal);
+    }
+
+    float etai = 1.0f;
+    float etat = ior; 
+
+    vec3 n = normal; 
+
+    if (cosi < 0) 
+    { 
+        cosi = abs(cosi);
+    } 
+    else 
+    { 
+        //std::swap(etai, etat);
+        n = normal * vec3(-1.0f);
+    }
+    
+    float eta = etai / etat; 
+
+    float k = 1.0f - eta * eta * (1.0f - cosi * cosi); 
+    
+    vec3 refractedRay;
+    
+    if (k < 0.0f)
+    {
+        refractedRay =  vec3(0.0f);
+    }
+    else
+    {
+        refractedRay = eta * ray + (eta * cosi - sqrtf(k)) * n;
+    }
+
+    return refractedRay;
+}
+
 /**
  * Calculate specular light coefficient.
  *

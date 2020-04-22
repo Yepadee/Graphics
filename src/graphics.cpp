@@ -90,13 +90,13 @@ int main(int argc, char* argv[])
   SDL_Event event;
   initDepthBuffer(WIDTH, HEIGHT);
 
-  objects.push_back(sphere);
-  objects.push_back(hsLogo);
+  //objects.push_back(sphere);
+  //objects.push_back(hsLogo);
 
   initBuffers(WIDTH, HEIGHT, offsetsNX, offsetsNY);
 
   cameraToWorld = constructCameraSpace(cameraPos, cameraAngle);
-  //rayTraceObjects(objects, lights, cameraToWorld, focalLength, window, offsets, offsetsNX, offsetsNY);
+  rayTraceObjects(objects, lights, cameraToWorld, focalLength, window, offsets, offsetsNX, offsetsNY);
 
   bool running = false;
   while(!running)
