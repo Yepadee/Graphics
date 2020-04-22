@@ -1,7 +1,7 @@
 mtllib sphere.mtl
 
 o Sphere_Sphere
-usemtl Red
+usemtl Green
 v  0.000000 19.737080 -0.000000
 v  -0.000000 19.357838 -3.850513
 v  -0.751198 19.357838 -3.776527
