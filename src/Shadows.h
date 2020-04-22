@@ -274,7 +274,7 @@ float getOcclusionValue(const vec3& triangleIntersectionPoint, const vec3& shado
                 abs(t)    <  rayLength &&
                 t         >  minDistance)
             {
-               if (t < minOcclusionDistance) minOcclusionDistance = t;
+               if (t < minOcclusionDistance && !triangle.isGlass) minOcclusionDistance = t;
             }
         }
     }

@@ -264,7 +264,7 @@ void rayTraceObjects(const std::vector<Object>& objects, const std::vector<Light
                         );
 
                         colourBuffer[bufferPos] = vec3(rti.colour.red, rti.colour.green, rti.colour.blue);
-                        brightnessBuffer[bufferPos] = powf(0.8f, rti.reflections) * getPointBrightess(rti, rayWorldSpace, objects, lights);
+                        brightnessBuffer[bufferPos] = powf(0.85f, rti.refractions) * powf(0.8f, rti.reflections) * getPointBrightess(rti, rayWorldSpace, objects, lights);
                     }
                     else
                     {
