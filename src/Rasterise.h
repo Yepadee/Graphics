@@ -60,8 +60,8 @@ CanvasPoint rasterisePoint(const vec3& pointWorldSpace, const mat4x4& worldToCam
  * @return canvasTriangle The 2D projection of the provided 3D triangle.
  */
 CanvasTriangle rasteriseTriangle(const ModelTriangle& modelTriangle, const mat4x4& worldToCamera, float focalLength,
-                               float canvasWidth, float canvasHeight,
-                               float imageWidth, float imageHeight)
+                                 float canvasWidth, float canvasHeight,
+                                 float imageWidth, float imageHeight)
 {
     CanvasTriangle canvasTriangle;
     for (int i = 0; i < 3; ++i)
@@ -74,9 +74,10 @@ CanvasTriangle rasteriseTriangle(const ModelTriangle& modelTriangle, const mat4x
     return canvasTriangle;
 }
 
-void rasteriseObjects(const std::vector<Object>& objects, const mat4x4& cameraToWorld, float focalLength, DrawingWindow& window)
-{
+void rasteriseObjects(const std::vector<Object>& objects, const mat4x4& cameraToWorld, const float focalLength, DrawingWindow& window)
+{  
     mat4x4 worldToCamera = inverse(cameraToWorld);
+
     for (Object obj : objects)
     {
         for (ModelTriangle m : obj.triangles)
