@@ -24,6 +24,7 @@ float* occlusionBuffer;
 float* rayDepthBuffer;
 float* lightSizeBuffer;
 float* lightDirectionBuffer;
+float* shadowIntensityBuffer;
 
 std::ostream& operator<<(std::ostream& os, const glm::mat3x3& mat)
 {
@@ -43,6 +44,7 @@ void initBuffers(int windowNX, int windowNY, int aaOffsetNX, int aaOffsetNY)
     rayDepthBuffer = new float[bufferSize];
     lightSizeBuffer = new float[bufferSize];
     lightDirectionBuffer = new float[bufferSize];
+    shadowIntensityBuffer = new float[bufferSize];
 }
 
 void freeBuffers()
@@ -55,6 +57,7 @@ void freeBuffers()
     free(rayDepthBuffer);        
     free(lightSizeBuffer);    
     free(lightDirectionBuffer);
+    free(shadowIntensityBuffer);
 }
 
 /**
@@ -260,7 +263,8 @@ void rayTraceObjects(const std::vector<Object>& objects, const std::vector<Light
                             rti.intersectionPoint, rti.normal, lights, objects,
                             occlusionBuffer[bufferPos],
                             lightSizeBuffer[bufferPos],
-                            lightDirectionBuffer[bufferPos]
+                            lightDirectionBuffer[bufferPos],
+                            shadowIntensityBuffer[bufferPos]
                         );
 
                         colourBuffer[bufferPos] = vec3(rti.colour.red, rti.colour.green, rti.colour.blue);
@@ -288,6 +292,7 @@ void rayTraceObjects(const std::vector<Object>& objects, const std::vector<Light
             float lightDirection = lightDirectionBuffer[bufferPos];
 
             float shadowStrength = getShadowStrength(occlusionBuffer, rayDepthBuffer, lightSize, lightDirection, canvasX, canvasY, canvasNX, canvasNY);
+            shadowStrength *= shadowIntensityBuffer[bufferPos];
             float shadowBrightness = 0.4f + 0.6f * (1.0f - shadowStrength);
 
             float br = std::max(0.2f, brightness.r * shadowBrightness);
