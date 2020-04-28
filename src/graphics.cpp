@@ -20,8 +20,8 @@
 using namespace std;
 using namespace glm;
 
-#define WIDTH 480
-#define HEIGHT 360
+#define WIDTH 640
+#define HEIGHT 480
 
 #define BLACK 0
 
@@ -51,7 +51,7 @@ int frameNo = 0;
 
 std::vector<Object> objects = loadOBJ("models/cornell-box.obj", 1.0f, {0.0f, 0.0f, 0.0f});
 Object sphere = loadOBJ("models/sphere.obj", 0.04f, {-1.5f, 1.6f, -1.8f})[0];
-Object hsLogo = loadOBJ("models/logo.obj", 0.01f, {-2.8f, 0.0f, -5.5f})[0];
+Object hsLogo = loadOBJ("models/logo.obj", 0.01f, {-3.1f, -0.3f, -5.5f})[0];
 
 
 std::vector<Light> lights = {
@@ -87,6 +87,10 @@ int drawMode = 0;
 int movementMode = 1;
 
 float ballVelocity = 0.0f;
+float cameraAngularVel = 0.0037f;
+float cameraAngularAcc = -0.000008f;
+
+bool passedMidPoint = false;
 
 
 int main(int argc, char* argv[])
@@ -199,20 +203,44 @@ void update()
   //   light.b = 1.0f;
   // }
 
-  rotateObjectZ(objects[9], 0.01f,  vec3(0.0f, 3.05f, 0.0f));
+  rotateObjectZ(objects[9], 0.01f,  vec3(-0.1f, 2.7f, 0.0f));
 
   ballVelocity -= 0.0001f;
   if (objects[8].triangles[0].vertices[0].y <= 1.4f) ballVelocity *= -1.0f;
   if (ballVelocity > 2.4f) ballVelocity = 2.4f;
   translateObject(objects[8],  vec3(0.0f, ballVelocity, 0.0f));
   
-  std::cout << objects[8].triangles[0].vertices[0].y << std::endl;
+  //std::cout << objects[8].triangles[0].vertices[0].y << std::endl;
 
   switch (movementMode)
   {
     case 0: // Orbit Mode
-      cameraToWorld = rotateAbout({0, 0, 0}, 3, 10, theta);
-      theta += 0.003f;
+      theta += cameraAngularVel;
+      cameraAngularVel += cameraAngularAcc;
+
+      if (abs(theta) < 0.15f && !passedMidPoint)
+      {
+        cameraAngularAcc *= -1.0f;
+        //theta =  0.002 * sign(theta);
+        passedMidPoint = true;
+        cameraAngularVel = 0.0037f * -sign(theta);
+        std::cout << cameraAngularAcc << std::endl;
+        //std::cout << theta << std::endl;
+        std::cout << std::endl;
+      }
+      
+      if (abs(cameraAngularVel) < 0.001f && passedMidPoint)
+      {
+        cameraAngularVel = 0.001f * sign(cameraAngularVel);
+        passedMidPoint = false;
+      }
+
+      //std::cout << abs(theta) << std::endl;
+      std::cout << cameraAngularVel << std::endl;
+      //std::cout << cameraAngularAcc << std::endl;
+
+      cameraToWorld = rotateAbout({0, 2.75f, 0}, 0.5, 3, theta);
+      
       break;
     case 1: // Input Mode
       cameraControls();

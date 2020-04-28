@@ -210,18 +210,18 @@ Object readObject(std::ifstream& ifs, std::unordered_map<std::string, Colour>& c
         ifs >> buffer;
     }
 
-    vec3 v0, v1, v2;
-    vec2 t0, t1, t2;
-    vec3 n0, n1, n2;
 
-    int fv0, fv1, fv2;
-    int ft0, ft1, ft2;
-    int fn0, fn1, fn2;
+
+
 
     std::vector<std::string> tokens;
 
     while (buffer == "f")
     {
+        int fv0 = 0, fv1 = 0, fv2 = 0;
+        int ft0 = 0, ft1 = 0, ft2 = 0;
+        int fn0 = 0, fn1 = 0, fn2 = 0;
+ 
         bool hasTexture = false;
         bool hasNormals = false;
         ifs >> buffer;
@@ -246,6 +246,8 @@ Object readObject(std::ifstream& ifs, std::unordered_map<std::string, Colour>& c
         if (hasTexture) ft2 = std::stoi(tokens[1]) - totalTextureVertices - 1;
         if (hasNormals) fn2 = std::stoi(tokens[2]) - totalVertices - 1;
 
+
+        vec3 v0, v1, v2;
         v0 = vertices[fv0] + displacement;
         v1 = vertices[fv1] + displacement;
         v2 = vertices[fv2] + displacement;
@@ -257,6 +259,8 @@ Object readObject(std::ifstream& ifs, std::unordered_map<std::string, Colour>& c
 
         if (hasNormals)
         {
+
+            vec3 n0, n1, n2;
             n0 = vertexNormals[fn0];
             n1 = vertexNormals[fn1];
             n2 = vertexNormals[fn2];
@@ -264,8 +268,8 @@ Object readObject(std::ifstream& ifs, std::unordered_map<std::string, Colour>& c
         }
 
         if (hasTexture)
-        {
-            
+        {              
+            vec2 t0, t1, t2;
             t0 = textureCoords[ft0];
             t1 = textureCoords[ft1];
             t2 = textureCoords[ft2];

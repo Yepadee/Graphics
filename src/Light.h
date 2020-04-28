@@ -203,8 +203,3 @@ vec3 getPointBrightess(const RayTriangleIntersection& rti, const vec3& cameraRay
 
     return vec3(rl, gl, bl);
 }
-
-vec3 getReflectedColour(const RayTriangleIntersection& rti, const vec3& cameraRay, const std::vector<Object>& objects)
-{
-
-}
