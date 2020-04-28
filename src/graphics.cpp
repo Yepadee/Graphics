@@ -6,6 +6,8 @@
 #include <fstream>
 #include <vector>
 
+#include <unistd.h>
+
 #include "Drawing3D.h"
 #include "Image.h"
 #include "Object.h"
@@ -48,7 +50,7 @@ float focalLength = WIDTH / 2;
 int frameNo = 0;
 
 std::vector<Object> objects = loadOBJ("models/cornell-box.obj", 1.0f, {0.0f, 0.0f, 0.0f});
-Object sphere = loadOBJ("models/sphere.obj", 0.04f, {-1.5f, 0.6f, -1.8f})[0];
+Object sphere = loadOBJ("models/sphere.obj", 0.04f, {-1.5f, 1.6f, -1.8f})[0];
 Object hsLogo = loadOBJ("models/logo.obj", 0.01f, {-2.8f, 0.0f, -5.5f})[0];
 
 
@@ -84,19 +86,21 @@ int offsetsNY = 3;
 int drawMode = 0;
 int movementMode = 1;
 
+float ballVelocity = 0.0f;
+
 
 int main(int argc, char* argv[])
 {
   SDL_Event event;
   initDepthBuffer(WIDTH, HEIGHT);
 
-  //objects.push_back(sphere);
-  //objects.push_back(hsLogo);
+  objects.push_back(sphere);
+  objects.push_back(hsLogo);
 
   initBuffers(WIDTH, HEIGHT, offsetsNX, offsetsNY);
 
   cameraToWorld = constructCameraSpace(cameraPos, cameraAngle);
-  rayTraceObjects(objects, lights, cameraToWorld, focalLength, window, offsets, offsetsNX, offsetsNY);
+  //rayTraceObjects(objects, lights, cameraToWorld, focalLength, window, offsets, offsetsNX, offsetsNY);
 
   bool running = false;
   while(!running)
@@ -138,6 +142,7 @@ void draw()
       rayTraceObjects(objects, lights, cameraToWorld, focalLength, window, offsets, offsetsNX, offsetsNY);
       break;
   }
+  sleep(0.041666666666f);
 
 
 }
@@ -194,23 +199,29 @@ void update()
   //   light.b = 1.0f;
   // }
 
+  rotateObjectZ(objects[9], 0.01f,  vec3(0.0f, 3.05f, 0.0f));
+
+  ballVelocity -= 0.0001f;
+  if (objects[8].triangles[0].vertices[0].y <= 1.4f) ballVelocity *= -1.0f;
+  if (ballVelocity > 2.4f) ballVelocity = 2.4f;
+  translateObject(objects[8],  vec3(0.0f, ballVelocity, 0.0f));
+  
+  std::cout << objects[8].triangles[0].vertices[0].y << std::endl;
+
   switch (movementMode)
   {
     case 0: // Orbit Mode
       cameraToWorld = rotateAbout({0, 0, 0}, 3, 10, theta);
-      theta += 0.03f;
+      theta += 0.003f;
       break;
     case 1: // Input Mode
       cameraControls();
-      break;
-    case 2:
-      translate(cameraToWorld, {0.0f, 0.0f, -0.2f});
       break;
   }
 
   if(keyPressed(SDL_SCANCODE_P)) drawMode = (drawMode + 1) % 3;
   if(keyPressed(SDL_SCANCODE_O)) drawMode = drawMode > 0 ? drawMode - 1 : 0;
-  if(keyPressed(SDL_SCANCODE_C)) movementMode = (movementMode + 1) % 3;
+  if(keyPressed(SDL_SCANCODE_C)) movementMode = (movementMode + 1) % 2;
 
 }
 

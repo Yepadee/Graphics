@@ -1,5 +1,7 @@
 #pragma once
 
+#include <glm/gtc/type_ptr.hpp>
+
 #include <fstream>
 #include <iostream>
 #include <unordered_map>
@@ -327,4 +329,34 @@ std::vector<Object> loadOBJ(const char* filepath, float scaleFactor, vec3 displa
     ifs.close();
 
     return objects;
+}
+
+void rotateObjectZ(Object& object, const float angle, const vec3& axis)
+{
+    float values[9] = {
+     cos(angle), -sin(angle), 0.0f,
+     sin(angle), cos(angle) , 0.0f,
+     0.0f      , 0.0f       , 1.0f
+    };
+
+    mat3x3 rotation = transpose(make_mat3(values));
+
+    for (ModelTriangle& modelTriangle : object.triangles)
+    {
+        for (int i = 0; i < 3; ++i)
+        {
+            modelTriangle.vertices[i] = rotation * (modelTriangle.vertices[i] - axis) + axis;
+        }
+    }
+}
+
+void translateObject(Object& object, const vec3& translation)
+{
+    for (ModelTriangle& modelTriangle : object.triangles)
+    {
+        for (int i = 0; i < 3; ++i)
+        {
+            modelTriangle.vertices[i] += translation;
+        }
+    }    
 }
