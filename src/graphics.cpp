@@ -82,7 +82,7 @@ int offsetsNX = 3;
 int offsetsNY = 3;
 
 int drawMode = 0;
-int movementMode = 1;
+int movementMode = 0;
 
 float ballVelocity = 0.0f;
 float cameraAngularVel = 0.0037f;
