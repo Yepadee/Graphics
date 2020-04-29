@@ -189,11 +189,6 @@ void cameraControls()
   if(keyDown(SDL_SCANCODE_U)) focalLength +=  10;
   if(keyDown(SDL_SCANCODE_I)) focalLength += -10;
 
-  if(keyPressed(SDL_SCANCODE_Y))
-  {
-    saveFrame(window, frameNo);
-    frameNo++;
-  }
 
   
 
