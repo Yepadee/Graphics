@@ -155,7 +155,7 @@ void draw()
       rayTraceObjects(objects, lights, cameraToWorld, focalLength, window, offsets, offsetsNX, offsetsNY);
       break;
   }
-  sleep(0.041666666666f);
+  sleep(0.066666666666f);
 
 
 }
