@@ -132,6 +132,7 @@ int main(int argc, char* argv[])
   }
 
   //freeBuffers();
+  exit(0);
 }
 
 void draw()
