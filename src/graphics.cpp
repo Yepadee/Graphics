@@ -125,7 +125,8 @@ int main(int argc, char* argv[])
   while(running)
   {
     // We MUST poll for events - otherwise the window will freeze !
-    update();
+    for (int i = 0; i < 14; ++i) update();
+    
     draw();
     // Need to render the frame at the end, or nothing actually gets shown on the screen !
     //window.renderFrame();
@@ -254,7 +255,7 @@ void update()
           lastCameraPos = getCameraPosition(cameraToWorld);
         }
 
-        if (timeLookingAtBall > 20.0f && theta > -1.5f)
+        if ((timeLookingAtBall > 20.0f && theta > -1.5f )|| frameNo > 246)
         {
           exit(0);
         }
