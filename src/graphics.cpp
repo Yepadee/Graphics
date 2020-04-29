@@ -262,12 +262,9 @@ void update()
           lastCameraPos = getCameraPosition(cameraToWorld);
         }
 
-        if (timeLookingAtBall > 24.0f && theta > -1.5f)
+        if (timeLookingAtBall > 20.0f && theta > -1.5f)
         {
-          theta -= 0.005f;
-          //rotateY(cameraToWorld, -0.005f);
-          lastCameraPos += vec3(-0.0037f, 0.001f, 0.001f);
-          cameraToWorld = constructCameraSpace(lastCameraPos, vec3(0.0f, theta, 0.0f));
+          exit(0);
         }
         
         
