@@ -28,8 +28,6 @@ using namespace glm;
 
 void draw();
 void update();
-void handleEvent(SDL_Event event);
-
 DrawingWindow window = DrawingWindow(WIDTH, HEIGHT, false);
 
 
@@ -104,7 +102,6 @@ vec3 orbitCentre(0.0f, 2.75f, 0.0f);
 
 int main(int argc, char* argv[])
 {
-  SDL_Event event;
   initDepthBuffer(WIDTH, HEIGHT);
 
   objects.push_back(sphere);
@@ -115,27 +112,26 @@ int main(int argc, char* argv[])
   cameraToWorld = constructCameraSpace(cameraPos, cameraAngle);
   //rayTraceObjects(objects, lights, cameraToWorld, focalLength, window, offsets, offsetsNX, offsetsNY);
 
-  bool running = false;
-  while(!running)
-  {
-    // We MUST poll for events - otherwise the window will freeze !
-    if(window.pollForInputEvents(&event)) handleEvent(event);
-    running = event.type == SDL_MOUSEBUTTONDOWN;
-    // Need to render the frame at the end, or nothing actually gets shown on the screen !
-    window.renderFrame();
-  }
+  bool running = true;
+  // while(!running)
+  // {
+  //   // We MUST poll for events - otherwise the window will freeze !
+  //   if(window.pollForInputEvents(&event)) handleEvent(event);
+  //   running = event.type == SDL_MOUSEBUTTONDOWN;
+  //   // Need to render the frame at the end, or nothing actually gets shown on the screen !
+  //   window.renderFrame();
+  // }
 
   while(running)
   {
     // We MUST poll for events - otherwise the window will freeze !
-    if(window.pollForInputEvents(&event)) handleEvent(event);
     update();
     draw();
     // Need to render the frame at the end, or nothing actually gets shown on the screen !
-    window.renderFrame();
+    //window.renderFrame();
   }
 
-  freeBuffers();
+  //freeBuffers();
 }
 
 void draw()
@@ -143,21 +139,16 @@ void draw()
   window.clearPixels();
   clearDepthBuffer();
 
-  switch (drawMode)
-  {
-    case 0:
-      rasteriseObjectsWireframe(objects, cameraToWorld, focalLength, window);
-      break;
-    case 1:
-      rasteriseObjects(objects, cameraToWorld, focalLength, window);
-      break;
-    case 2:
-      rayTraceObjects(objects, lights, cameraToWorld, focalLength, window, offsets, offsetsNX, offsetsNY);
-      break;
-  }
-  sleep(0.066666666666f);
+  rasteriseObjectsWireframe(objects, cameraToWorld, focalLength, window);
+  saveFrame(window, frameNo, "wire-frame");
 
+  rasteriseObjects(objects, cameraToWorld, focalLength, window);
+  saveFrame(window, frameNo, "rasterise");
 
+  rayTraceObjects(objects, lights, cameraToWorld, focalLength, window, offsets, offsetsNX, offsetsNY);
+  saveFrame(window, frameNo, "ray-trace");
+
+  frameNo ++;
 }
 
 void cameraControls()
@@ -280,9 +271,4 @@ void update()
   if(keyPressed(SDL_SCANCODE_O)) drawMode = drawMode > 0 ? drawMode - 1 : 0;
   if(keyPressed(SDL_SCANCODE_C)) movementMode = (movementMode + 1) % 2;
 
-}
-
-void handleEvent(SDL_Event event)
-{
-  if(event.type == SDL_MOUSEBUTTONDOWN) cout << "MOUSE CLICKED" << endl;
 }
