@@ -91,6 +91,7 @@ float cameraAngularVel = 0.0037f;
 float cameraAngularAcc = -0.000008f;
 
 bool passedMidPoint = false;
+int numOrbits = 0;
 
 
 int main(int argc, char* argv[])
@@ -210,7 +211,7 @@ void update()
   if (ballVelocity > 2.4f) ballVelocity = 2.4f;
   translateObject(objects[8],  vec3(0.0f, ballVelocity, 0.0f));
   
-  //std::cout << objects[8].triangles[0].vertices[0].y << std::endl;
+  std::cout << getCameraPosition(cameraToWorld) << std::endl;
 
   switch (movementMode)
   {
@@ -218,28 +219,30 @@ void update()
       theta += cameraAngularVel;
       cameraAngularVel += cameraAngularAcc;
 
-      if (abs(theta) < 0.15f && !passedMidPoint)
+      if (abs(theta) < 0.010f && !passedMidPoint)
       {
         cameraAngularAcc *= -1.0f;
-        //theta =  0.002 * sign(theta);
         passedMidPoint = true;
         cameraAngularVel = 0.0037f * -sign(theta);
-        std::cout << cameraAngularAcc << std::endl;
-        //std::cout << theta << std::endl;
-        std::cout << std::endl;
+
+        numOrbits ++;
       }
       
-      if (abs(cameraAngularVel) < 0.001f && passedMidPoint)
+      if (numOrbits < 3)
       {
-        cameraAngularVel = 0.001f * sign(cameraAngularVel);
-        passedMidPoint = false;
+        if (abs(cameraAngularVel) < 0.001f && passedMidPoint)
+        {
+          cameraAngularVel = 0.001f * sign(cameraAngularVel);
+          passedMidPoint = false;
+        }
+        cameraToWorld = rotateAbout({0, 2.75f, 0}, 0.5, 3, theta);
       }
-
-      //std::cout << abs(theta) << std::endl;
-      std::cout << cameraAngularVel << std::endl;
-      //std::cout << cameraAngularAcc << std::endl;
-
-      cameraToWorld = rotateAbout({0, 2.75f, 0}, 0.5, 3, theta);
+      else
+      {
+        //vec3 cameraPos = getCameraPosition(cameraToWorld);
+        //vec3 direction = normalize(vec3(), cameraPos);
+        //translate(cameraToWorld); 
+      }
       
       break;
     case 1: // Input Mode

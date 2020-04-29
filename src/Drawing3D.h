@@ -45,8 +45,15 @@ void drawLine(const CanvasPoint& from, const CanvasPoint& to, uint32_t colour, D
   float xStepSize = xDiff/numberOfSteps;
   float yStepSize = yDiff/numberOfSteps;
 
+  float depthDiff = to.depth - from.depth;
+  float depthStepSize = depthDiff/numberOfSteps;
+
+  if (from.depth < 0.1f || from.depth > 0.9f) return;
+  if (to.depth < 0.1f || to.depth > 0.9f) return;
+
   for (float i=0.0; i<numberOfSteps; i++)
   {
+    float depth = from.depth + (depthStepSize*i);
     float x = from.x + (xStepSize*i);
     float y = from.y + (yStepSize*i);
     if (x >= window.width) continue;
@@ -54,6 +61,9 @@ void drawLine(const CanvasPoint& from, const CanvasPoint& to, uint32_t colour, D
 
     if (x < 0) continue;
     if (y < 0) continue;
+
+    if (depth < 0.1f || depth > 0.9f) continue;
+    //std::cout << depth << std::endl;
     window.setPixelColour(floor(x), floor(y), colour);
   }
 }
@@ -81,6 +91,13 @@ void rasterLine(const CanvasPoint& from, const CanvasPoint& to, uint32_t colour,
     float x = from.x + (xStepSize*i);
     
     float depth = from.depth + (depthStepSize*i);
+
+    if (x >= window.width) continue;
+    if (y >= window.height) continue;
+
+    if (x < 0) continue;
+    if (y < 0) continue;
+    
     if (depth > depthBuffer[(int)(floor(x) + dbWidth * floor(y))])
     {
       depthBuffer[(int)(floor(x) + dbWidth * floor(y))] = depth;
@@ -147,6 +164,10 @@ void fillTriangle(CanvasTriangle& triangle, DrawingWindow& window)
   CanvasPoint minPoint = triangle.vertices[0];
   CanvasPoint midPoint = triangle.vertices[1];
   CanvasPoint maxPoint = triangle.vertices[2];
+
+  if (minPoint.depth < 0.1f || minPoint.depth > 0.9f) return;
+  if (midPoint.depth < 0.1f || midPoint.depth > 0.9f) return;
+  if (maxPoint.depth < 0.1f || maxPoint.depth > 0.9f) return;
 
   // Define the y points to interpolate between so we can draw between them. 
   float yStart = minPoint.y;
