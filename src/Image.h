@@ -113,14 +113,14 @@ Image loadPPM(const char* fileName)
   return Image(width, height, payload);
 }
 
-void saveFrame(DrawingWindow& drawingWindow, int frameNo)
+void saveFrame(DrawingWindow& drawingWindow, int frameNo, std::string folder)
 {
   
   int width = drawingWindow.width;
   int height = drawingWindow.height;
 
-  std::string filename = "";
-  filename += "renders/frame" + std::to_string(frameNo) + ".ppm";
+  std::string filename = "renders/" + folder;
+  filename += "/frame" + std::to_string(frameNo) + ".ppm";
 
   std::cout << "saving frame: " << filename << std::endl;
 

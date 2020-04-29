@@ -33,7 +33,7 @@ void handleEvent(SDL_Event event);
 DrawingWindow window = DrawingWindow(WIDTH, HEIGHT, false);
 
 
-float theta = 0.0f;
+
 
 glm::vec3 cameraPos(0.0f, 2.4f, 3.8f);
 glm::vec3 cameraAngle(0.0f, 0.0f, 0.0f);
@@ -90,8 +90,16 @@ float ballVelocity = 0.0f;
 float cameraAngularVel = 0.0037f;
 float cameraAngularAcc = -0.000008f;
 
+float theta = 0.0f;
+float cameraRadius = 3.0f;
+float cameraHeight = 0.5f;
 bool passedMidPoint = false;
 int numOrbits = 0;
+float timeLookingAtBall = 0.0f;
+
+vec3 lastCameraPos;
+
+vec3 orbitCentre(0.0f, 2.75f, 0.0f);
 
 
 int main(int argc, char* argv[])
@@ -216,32 +224,58 @@ void update()
   switch (movementMode)
   {
     case 0: // Orbit Mode
-      theta += cameraAngularVel;
-      cameraAngularVel += cameraAngularAcc;
 
-      if (abs(theta) < 0.010f && !passedMidPoint)
-      {
-        cameraAngularAcc *= -1.0f;
-        passedMidPoint = true;
-        cameraAngularVel = 0.0037f * -sign(theta);
-
-        numOrbits ++;
-      }
       
-      if (numOrbits < 3)
+      if (numOrbits < 2)
       {
+        theta += cameraAngularVel;
+        cameraAngularVel += cameraAngularAcc;
+
+        if (abs(theta) < 0.010f && !passedMidPoint)
+        {
+          cameraAngularAcc *= -1.0f;
+          passedMidPoint = true;
+          cameraAngularVel = 0.0037f * -sign(theta);  
+        }
+
         if (abs(cameraAngularVel) < 0.001f && passedMidPoint)
         {
           cameraAngularVel = 0.001f * sign(cameraAngularVel);
           passedMidPoint = false;
+          numOrbits ++;
         }
-        cameraToWorld = rotateAbout({0, 2.75f, 0}, 0.5, 3, theta);
+        cameraToWorld = rotateAbout(orbitCentre, cameraHeight, cameraRadius, theta);
       }
       else
       {
-        //vec3 cameraPos = getCameraPosition(cameraToWorld);
-        //vec3 direction = normalize(vec3(), cameraPos);
-        //translate(cameraToWorld); 
+        
+        if (theta < 1.5f && timeLookingAtBall <= 0.0f)
+        {
+          theta += 0.001f;
+          cameraToWorld = rotateAbout(orbitCentre, cameraHeight, cameraRadius, theta);
+        } 
+        if (cameraRadius > 1.0f)
+        {
+          orbitCentre += vec3(0.001f, -0.003f, -0.003f);
+          cameraHeight -= 0.001f;
+          cameraRadius -= 0.001f;
+          //translate(cameraToWorld, vec3(0.0f, -0.002f, -0.003f));
+        }
+        else
+        {
+          timeLookingAtBall += 1.0f;
+          lastCameraPos = getCameraPosition(cameraToWorld);
+        }
+
+        if (timeLookingAtBall > 24.0f && theta > -1.5f)
+        {
+          theta -= 0.005f;
+          //rotateY(cameraToWorld, -0.005f);
+          lastCameraPos += vec3(-0.0037f, 0.001f, 0.001f);
+          cameraToWorld = constructCameraSpace(lastCameraPos, vec3(0.0f, theta, 0.0f));
+        }
+        
+        
       }
       
       break;

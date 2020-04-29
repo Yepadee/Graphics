@@ -296,6 +296,8 @@ void rayTraceObjects(const std::vector<Object>& objects, const std::vector<Light
         }
     }
 
+    std::cout << "done" << std::endl;
+
     drawScreenBuffer(window, aaOffsets, aaOffsetNX, aaOffsetNY, screenBuffer);
 }
 
